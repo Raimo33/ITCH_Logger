@@ -1,0 +1,3 @@
+/home/claudio/Desktop/ITCH_Logger/CMakeFiles/ITCH_Logger.dir
+/home/claudio/Desktop/ITCH_Logger/CMakeFiles/edit_cache.dir
+/home/claudio/Desktop/ITCH_Logger/CMakeFiles/rebuild_cache.dir

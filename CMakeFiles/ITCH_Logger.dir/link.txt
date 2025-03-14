@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/ITCH_Logger.dir/main.cpp.o CMakeFiles/ITCH_Logger.dir/Client.cpp.o CMakeFiles/ITCH_Logger.dir/Logger.cpp.o CMakeFiles/ITCH_Logger.dir/utils.cpp.o -o ITCH_Logger 

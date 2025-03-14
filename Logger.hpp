@@ -4,6 +4,8 @@
 #include <string_view>
 #include <array>
 #include <cstdint>
+#include <sys/uio.h>
+#include <memory>
 
 #define BUFFER_SIZE 32 * 1024 * 1024
 #define N_CHUNKS 8
@@ -20,12 +22,13 @@ class Logger
 
   private:
 
+    int create_file(void) const;
     const std::array<iovec, N_CHUNKS> precompute_iov(void);
     void flush(void);
 
     const std::string filename;
     const int fd;
-    alignas(ALIGNMENT) char buffer[BUFFER_SIZE];
+    std::unique_ptr<char[]> buffer;
     char *write_ptr;
     const char *end_ptr; 
     const std::array<iovec, N_CHUNKS> iov;
