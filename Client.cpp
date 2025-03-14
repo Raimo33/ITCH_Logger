@@ -1,3 +1,14 @@
+/*================================================================================
+
+File: Client.cpp                                                                
+Creator: Claudio Raimondi                                                       
+Email: claudio.raimondi@pm.me                                                   
+
+created at: 2025-03-14 19:09:39                                                 
+last edited: 2025-03-14 19:09:39                                                
+
+================================================================================*/
+
 #include "Client.hpp"
 #include "utils.hpp"
 #include "macros.hpp"
@@ -81,8 +92,16 @@ HOT void Client::run(void)
     
     for (uint16_t i = 0; i < header.message_count; ++i)
     {
-      recv(fd, &message, sizeof(message.length), MSG_WAITALL);
-      recv(fd, &message.type, message.length, MSG_WAITALL);
+      recv(fd, &message, sizeof(message.length) + sizeof(message.type), MSG_WAITALL);
+
+      const bool is_order = (message.type == 'A' | message.type == 'E' | message.type == 'C' | message.type == 'D');
+      if (!is_order)
+      {
+        lseek(fd, message.length, SEEK_CUR);
+        continue;
+      }
+
+      recv(fd, &message.data, message.length - sizeof(message.type), MSG_WAITALL);
 
       switch (message.type)
       {
