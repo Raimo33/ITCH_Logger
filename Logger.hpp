@@ -10,6 +10,8 @@
 #define BUFFER_SIZE 32 * 1024 * 1024
 #define N_CHUNKS 8
 #define ALIGNMENT 4096
+#define QUEUE_DEPTH 16
+#define PREALLOCATED_FILE_SIZE 365 * 24 * 60 * 60 * 100
 
 class Logger
 {
@@ -28,8 +30,9 @@ class Logger
 
     const std::string filename;
     const int fd;
-    std::unique_ptr<char[]> buffer;
+    char *buffer;
     char *write_ptr;
     const char *end_ptr; 
     const std::array<iovec, N_CHUNKS> iov;
+    io_uring ring;
 };
