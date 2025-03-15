@@ -6,3 +6,5 @@ Makefile
 OrderBook
 .vscode/
 ITCH_Logger
+*.o
+*.s

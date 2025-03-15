@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-15 18:05:36                                                
+last edited: 2025-03-15 18:27:36                                                
 
 ================================================================================*/
 
@@ -84,13 +84,13 @@ COLD int Client::create_udp_socket(void) const
 
 void Client::run(void)
 {
-  char buffer[BUFFER_SIZE];
+  char buffer[READ_BUFFER_SIZE];
   size_t buffer_filled = 0;
   size_t buffer_position = 0;
 
   while (true)
   {
-    ssize_t bytes_received = recv(fd, buffer + buffer_filled, BUFFER_SIZE - buffer_filled, 0);
+    ssize_t bytes_received = recv(fd, buffer + buffer_filled, READ_BUFFER_SIZE - buffer_filled, 0);
 
     if (UNLIKELY(bytes_received <= 0))
       utils::throw_error("Failed to receive data");
@@ -152,21 +152,25 @@ void Client::run(void)
 
 void Client::handle_new_order(const char *message_data)
 {
+  (void)message_data;
   logger.log("new_order\n");
 }
 
 void Client::handle_execution_notice(const char *message_data)
 {
+  (void)message_data;
   logger.log("execution_notice\n");
 }
 
 void Client::handle_execution_notice_with_info(const char *message_data)
 {
+  (void)message_data;
   logger.log("execution_notice_with_info\n");
 }
 
 void Client::handle_order_delete(const char *message_data)
 {
+  (void)message_data;
   logger.log("order_delete\n");
 }
 

@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 12:48:08                                                 
-last edited: 2025-03-15 18:05:36                                                
+last edited: 2025-03-15 18:27:36                                                
 
 ================================================================================*/
 
@@ -22,22 +22,22 @@ last edited: 2025-03-15 18:05:36
 Logger::Logger(const std::string_view filename) :
   filename(filename),
   fd(create_file()),
-  buffers({
-    static_cast<char *>(aligned_alloc(ALIGNMENT, BUFFER_SIZE)),
-    static_cast<char *>(aligned_alloc(ALIGNMENT, BUFFER_SIZE))
-  }),
+  buffers{
+    static_cast<char *>(aligned_alloc(ALIGNMENT, WRITE_BUFFER_SIZE)),
+    static_cast<char *>(aligned_alloc(ALIGNMENT, WRITE_BUFFER_SIZE))
+  },
   buf_idx(0),
   write_ptr(buffers[buf_idx]),
-  end_ptr(buffers[buf_idx] + BUFFER_SIZE)
+  end_ptr(buffers[buf_idx] + WRITE_BUFFER_SIZE)
 {
   bool error = false;
 
   error |= (io_uring_queue_init(1, &ring, IORING_SETUP_SQPOLL) == -1);
   error |= (io_uring_register_files(&ring, &fd, 1) == -1);
-  iovec iov[2] = {{buffers[0], BUFFER_SIZE}, {buffers[1], BUFFER_SIZE}};
+  iovec iov[2] = {{buffers[0], WRITE_BUFFER_SIZE}, {buffers[1], WRITE_BUFFER_SIZE}};
   error |= (io_uring_register_buffers(&ring, iov, 2) == -1);
-  error |= (madvise(buffers[0], BUFFER_SIZE, MADV_SEQUENTIAL) == -1);
-  error |= (madvise(buffers[1], BUFFER_SIZE, MADV_SEQUENTIAL) == -1);
+  error |= (madvise(buffers[0], WRITE_BUFFER_SIZE, MADV_SEQUENTIAL) == -1);
+  error |= (madvise(buffers[1], WRITE_BUFFER_SIZE, MADV_SEQUENTIAL) == -1);
   error |= (posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL) == -1);
 
   if (error)
@@ -84,13 +84,13 @@ void Logger::log(const std::string_view message)
 void Logger::flush(void)
 {
   io_uring_sqe *sqe = io_uring_get_sqe(&ring);
-  io_uring_prep_write_fixed(sqe, fd, buffers[buf_idx], BUFFER_SIZE, -1, buf_idx);
+  io_uring_prep_write_fixed(sqe, fd, buffers[buf_idx], WRITE_BUFFER_SIZE, -1, buf_idx);
   sqe->flags |= IOSQE_ASYNC | IOSQE_FIXED_FILE | IOSQE_IO_LINK | IOSQE_BUFFER_SELECT | IOSQE_CQE_SKIP_SUCCESS;
 
   buf_idx ^= 1;
   write_ptr = buffers[buf_idx];
-  end_ptr = write_ptr + BUFFER_SIZE;
+  end_ptr = write_ptr + WRITE_BUFFER_SIZE;
 
-  if (UNLIKELY(fallocate(fd, 0, lseek(fd, 0, SEEK_END), BUFFER_SIZE) == -1))
+  if (UNLIKELY(fallocate(fd, 0, lseek(fd, 0, SEEK_END), WRITE_BUFFER_SIZE) == -1))
     utils::throw_error("Failed to allocate space for log file");
 }

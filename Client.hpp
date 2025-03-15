@@ -6,7 +6,7 @@
 #include "Packets.hpp"
 #include "Logger.hpp"
 
-constexpr uint16_t BUFFER_SIZE = 65536;
+constexpr uint32_t READ_BUFFER_SIZE = 1024 * 1024;
 
 class Client
 {
