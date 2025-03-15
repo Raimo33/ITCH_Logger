@@ -41,7 +41,8 @@ COLD sockaddr_in Client::create_address(const std::string_view address_string) c
   std::string_view ip = address_parts.first;
   std::string_view port = address_parts.second;
 
-  if (ip.empty() || port.empty())
+  const bool error = (ip.empty() | port.empty());
+  if (error)
     utils::throw_error("Invalid address string");
   
   sockaddr_in address{};
