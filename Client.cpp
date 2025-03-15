@@ -95,7 +95,7 @@ HOT void Client::run(void)
     {
       recv(fd, &message, sizeof(message.length) + sizeof(message.type), MSG_WAITALL);
 
-      const bool is_order = (message.type == 'A' | message.type == 'E' | message.type == 'C' | message.type == 'D');
+      const bool is_order = (message.type == 'A') | (message.type == 'E') | (message.type == 'C') | (message.type == 'D');
       if (!is_order)
       {
         lseek(fd, message.length, SEEK_CUR);

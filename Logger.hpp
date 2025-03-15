@@ -5,13 +5,14 @@
 #include <array>
 #include <cstdint>
 #include <sys/uio.h>
+#include <liburing.h>
 #include <memory>
 
-#define BUFFER_SIZE 32 * 1024 * 1024
-#define N_CHUNKS 8
-#define ALIGNMENT 4096
-#define QUEUE_DEPTH 16
-#define PREALLOCATED_FILE_SIZE 365 * 24 * 60 * 60 * 100
+constexpr size_t BUFFER_SIZE = 64 * 1024 * 1024;
+constexpr uint8_t N_CHUNKS = 64;
+constexpr uint16_t ALIGNMENT = 4096;
+constexpr uint8_t QUEUE_DEPTH = 16;
+constexpr size_t PREALLOCATED_FILE_SIZE = 365ULL * 24 * 60 * 60 * 100;
 
 class Logger
 {
