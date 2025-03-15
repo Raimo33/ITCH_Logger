@@ -92,7 +92,7 @@ HOT void Client::run(void)
     recv(fd, &header, sizeof(header), MSG_WAITALL);
     const uint16_t message_count = ntohs(header.message_count);
 
-    for (uint16_t i = 0; i < header.message_count; ++i)
+    for (uint16_t i = 0; i < message_count; ++i)
     {
       recv(fd, &message, sizeof(message.length) + sizeof(message.type), MSG_WAITALL);
       const uint16_t message_length = ntohs(message.length);
