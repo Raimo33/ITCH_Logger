@@ -73,8 +73,8 @@ COLD int Client::create_udp_socket(void) const
   error |= (sock_fd == -1);
 
   constexpr int enable = 1;
-  error |= setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
-  error |= setsockopt(sock_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
+  error |= (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) == -1);
+  error |= (setsockopt(sock_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1);
 
   if (error)
     utils::throw_error("Failed to create socket");
@@ -90,19 +90,21 @@ HOT void Client::run(void)
   while (true)
   {
     recv(fd, &header, sizeof(header), MSG_WAITALL);
-    
+    const uint16_t message_count = ntohs(header.message_count);
+
     for (uint16_t i = 0; i < header.message_count; ++i)
     {
       recv(fd, &message, sizeof(message.length) + sizeof(message.type), MSG_WAITALL);
+      const uint16_t message_length = ntohs(message.length);
 
       const bool is_order = (message.type == 'A') | (message.type == 'E') | (message.type == 'C') | (message.type == 'D');
       if (!is_order)
       {
-        lseek(fd, message.length, SEEK_CUR);
+        lseek(fd, message_length, SEEK_CUR);
         continue;
       }
 
-      recv(fd, &message.data, message.length - sizeof(message.type), MSG_WAITALL);
+      recv(fd, &message.data, message_length - sizeof(message.type), MSG_WAITALL);
 
       switch (message.type)
       {

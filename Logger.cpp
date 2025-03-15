@@ -18,13 +18,12 @@ Logger::Logger(const std::string_view filename) :
 {
   bool error = false;
 
-  error |= fallocate(fd, FALLOC_FL_KEEP_SIZE, 0, PREALLOCATED_FILE_SIZE);
-  error |= io_uring_queue_init(QUEUE_DEPTH, &ring, 0);
-  error |= io_uring_register_files(&ring, &fd, 1);
-  iovec iov = { buffer, BUFFER_SIZE };
-  error |= io_uring_register_buffers(&ring, &iov, 1);
-  error |= madvise(buffer, BUFFER_SIZE, MADV_SEQUENTIAL);
-  error |= posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL);
+  error |= (fallocate(fd, FALLOC_FL_KEEP_SIZE, 0, PREALLOCATED_FILE_SIZE) == -1);
+  error |= (io_uring_queue_init(QUEUE_DEPTH, &ring, 0) == -1);
+  error |= (io_uring_register_files(&ring, &fd, 1) == -1);
+  error |= (io_uring_register_buffers(&ring, iov.data(), N_CHUNKS) == -1);
+  error |= (madvise(buffer, BUFFER_SIZE, MADV_SEQUENTIAL) == -1);
+  error |= (posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL) == -1);
 
   if (error)
     utils::throw_error("Failed to initialize logger");
@@ -56,6 +55,7 @@ const std::array<iovec, N_CHUNKS> Logger::precompute_iov(void)
 
 Logger::~Logger()
 {
+  free(buffer);
   io_uring_unregister_files(&ring);
   io_uring_queue_exit(&ring);
   close(fd);
