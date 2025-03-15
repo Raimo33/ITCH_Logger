@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-15 18:27:36                                                
+last edited: 2025-03-15 21:14:56                                                
 
 ================================================================================*/
 
@@ -17,6 +17,7 @@ last edited: 2025-03-15 18:27:36
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <cstring>
+#include <sstream>
 
 COLD Client::Client(const std::string_view bind_address_str, const std::string_view multicast_address_str) :
   multicast_address(create_address(multicast_address_str)),
@@ -100,7 +101,7 @@ void Client::run(void)
     while (buffer_position + sizeof(MoldUDP64Header) <= buffer_filled)
     {
       const MoldUDP64Header *header = reinterpret_cast<MoldUDP64Header *>(buffer + buffer_position);
-      uint16_t message_count = ntohs(header->message_count);
+      uint16_t message_count = utils::swap16(header->message_count);
       buffer_position += sizeof(MoldUDP64Header);
 
       while(message_count--)
@@ -110,7 +111,7 @@ void Client::run(void)
 
         const MessageBlock *block = reinterpret_cast<MessageBlock *>(buffer + buffer_position);
 
-        const uint16_t block_length = ntohs(block->length) - sizeof(MessageBlock::type);
+        const uint16_t block_length = utils::swap16(block->length) - sizeof(MessageBlock::type);
         buffer_position += sizeof(MessageBlock::length);
 
         const char message_type = block->type;
@@ -122,22 +123,21 @@ void Client::run(void)
           goto need_more_data;
         }
 
-        const char *message_data = buffer + buffer_position;
         buffer_position += block_length;
 
         switch (message_type)
         {
           case 'A':
-            handle_new_order(message_data);
+            handle_new_order(block->data.new_order);
             break;
           case 'E':
-            handle_execution_notice(message_data);
+            handle_execution_notice(block->data.execution_notice);
             break;
           case 'C':
-            handle_execution_notice_with_info(message_data);
+            handle_execution_notice_with_trade_info(block->data.execution_notice_with_trade_info);
             break;
           case 'D':
-            handle_order_delete(message_data);
+            handle_order_delete(block->data.order_delete);
             break;
         }
       }
@@ -150,27 +150,47 @@ void Client::run(void)
   }
 }
 
-void Client::handle_new_order(const char *message_data)
+void Client::handle_new_order(const MessageBlock::NewOrder &message_data)
 {
-  (void)message_data;
-  logger.log("new_order\n");
+  logger.log("[New Order] Timestamp: ");
+  logger.log(std::to_string(utils::swap32(message_data.timestamp_nanoseconds)));
+  logger.log("Side: ");
+  logger.log(&message_data.side);
+  logger.log("Price: ");
+  logger.log(std::to_string(utils::swap32(message_data.price)));
+  logger.log("Quantity: ");
+  logger.log(std::to_string(utils::swap64(message_data.quantity)));
+  logger.log("Orderbook Position: ");
+  logger.log(std::to_string(utils::swap32(message_data.orderbook_position)));
 }
 
-void Client::handle_execution_notice(const char *message_data)
+void Client::handle_execution_notice(const MessageBlock::ExecutionNotice &message_data)
 {
-  (void)message_data;
-  logger.log("execution_notice\n");
+  logger.log("[Execution Notice] Timestamp: ");
+  logger.log(std::to_string(utils::swap32(message_data.timestamp_nanoseconds)));
+  logger.log("Side: ");
+  logger.log(&message_data.side);
+  logger.log("Quantity: ");
+  logger.log(std::to_string(utils::swap64(message_data.executed_quantity)));
 }
 
-void Client::handle_execution_notice_with_info(const char *message_data)
+void Client::handle_execution_notice_with_trade_info(const MessageBlock::ExecutionNoticeWithTradeInfo &message_data)
 {
-  (void)message_data;
-  logger.log("execution_notice_with_info\n");
+  logger.log("[Execution Notice With Trade Info] Timestamp: ");
+  logger.log(std::to_string(utils::swap32(message_data.timestamp_nanoseconds)));
+  logger.log("Side: ");
+  logger.log(&message_data.side);
+  logger.log("Price: ");
+  logger.log(std::to_string(utils::swap32(message_data.trade_price)));
+  logger.log("Quantity: ");
+  logger.log(std::to_string(utils::swap64(message_data.executed_quantity)));
 }
 
-void Client::handle_order_delete(const char *message_data)
+void Client::handle_order_delete(const MessageBlock::DeletedOrder &message_data)
 {
-  (void)message_data;
-  logger.log("order_delete\n");
+  logger.log("[Order Delete] Timestamp: ");
+  logger.log(std::to_string(utils::swap32(message_data.timestamp_nanoseconds)));
+  logger.log("Side: ");
+  logger.log(&message_data.side);
 }
 

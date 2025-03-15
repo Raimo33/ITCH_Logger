@@ -1,7 +1,19 @@
+/*================================================================================
+
+File: utils.cpp                                                                 
+Creator: Claudio Raimondi                                                       
+Email: claudio.raimondi@pm.me                                                   
+
+created at: 2025-03-15 21:14:56                                                 
+last edited: 2025-03-15 21:14:56                                                
+
+================================================================================*/
+
 #include "utils.hpp"
 
 #include <string_view>
 #include <stdexcept>
+#include <cstdint>
 
 namespace utils
 {

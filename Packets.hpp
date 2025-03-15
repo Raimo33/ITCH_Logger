@@ -17,58 +17,62 @@ struct MessageBlock
   uint16_t length;
   char type;
 
+  struct NewOrder
+  {
+    uint32_t timestamp_nanoseconds;
+    uint64_t order_id;
+    uint32_t orderbook_id;
+    char side;
+    uint32_t orderbook_position;
+    uint64_t quantity;
+    int32_t price;
+    uint16_t order_attributes;
+    uint8_t lot_type;
+  };
+
+  struct ExecutionNotice
+  {
+    uint32_t timestamp_nanoseconds;
+    uint64_t order_id;
+    uint32_t orderbook_id;
+    char side;
+    uint64_t executed_quantity;
+    uint64_t match_id;
+    uint32_t combo_group_id;
+    char reserved1[7];
+    char reserved2[7];
+  };
+
+  struct ExecutionNoticeWithTradeInfo
+  {
+    uint32_t timestamp_nanoseconds;
+    uint64_t order_id;
+    uint32_t orderbook_id;
+    char side;
+    uint64_t executed_quantity;
+    uint64_t match_id;
+    uint32_t combo_group_id;
+    char reserved1[7];
+    char reserved2[7];
+    uint32_t trade_price;
+    char occurred_cross;
+    char printable;
+  };
+
+  struct DeletedOrder
+  {
+    uint32_t timestamp_nanoseconds;
+    uint64_t order_id;
+    uint32_t orderbook_id;
+    char side;
+  };
+
   union
   {
-    struct
-    {
-      uint32_t timestamp_nanoseconds;
-      uint64_t order_id;
-      uint32_t orderbook_id;
-      char side;
-      uint32_t orderbook_position;
-      uint64_t quantity;
-      int32_t price;
-      uint16_t order_attributes;
-      uint8_t lot_type;
-    } new_order;
-
-    struct
-    {
-      uint32_t timestamp_nanoseconds;
-      uint64_t order_id;
-      uint32_t orderbook_id;
-      char side;
-      uint64_t executed_quantity;
-      uint64_t match_id;
-      uint32_t combo_group_id;
-      char reserved1[7];
-      char reserved2[7];
-    } execution_notice;
-
-    struct
-    {
-      uint32_t timestamp_nanoseconds;
-      uint64_t order_id;
-      uint32_t orderbook_id;
-      char side;
-      uint64_t executed_quantity;
-      uint64_t match_id;
-      uint32_t combo_group_id;
-      char reserved1[7];
-      char reserved2[7];
-      uint32_t trade_price;
-      char occurred_cross;
-      char printable;
-    } execution_notice_with_trade_info;
-
-    struct
-    {
-      uint32_t timestamp_nanoseconds;
-      uint64_t order_id;
-      uint32_t orderbook_id;
-      char side;
-    } deleted_order;
-  
+    NewOrder new_order;
+    ExecutionNotice execution_notice;
+    ExecutionNoticeWithTradeInfo execution_notice_with_trade_info;
+    DeletedOrder order_delete;
   } data;
 };
 
