@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-14 19:09:39                                                
+last edited: 2025-03-15 18:05:36                                                
 
 ================================================================================*/
 
@@ -82,45 +82,91 @@ COLD int Client::create_udp_socket(void) const
   return sock_fd;
 }
 
-HOT void Client::run(void)
+void Client::run(void)
 {
-  MoldUDP64Header header{};
-  MessageBlock message{};
+  char buffer[BUFFER_SIZE];
+  size_t buffer_filled = 0;
+  size_t buffer_position = 0;
 
   while (true)
   {
-    recv(fd, &header, sizeof(header), MSG_WAITALL);
-    const uint16_t message_count = ntohs(header.message_count);
+    ssize_t bytes_received = recv(fd, buffer + buffer_filled, BUFFER_SIZE - buffer_filled, 0);
 
-    for (uint16_t i = 0; i < message_count; ++i)
+    if (UNLIKELY(bytes_received <= 0))
+      utils::throw_error("Failed to receive data");
+
+    buffer_filled += bytes_received;
+
+    while (buffer_position + sizeof(MoldUDP64Header) <= buffer_filled)
     {
-      recv(fd, &message, sizeof(message.length) + sizeof(message.type), MSG_WAITALL);
-      const uint16_t message_length = ntohs(message.length);
+      const MoldUDP64Header *header = reinterpret_cast<MoldUDP64Header *>(buffer + buffer_position);
+      uint16_t message_count = ntohs(header->message_count);
+      buffer_position += sizeof(MoldUDP64Header);
 
-      const bool is_order = (message.type == 'A') | (message.type == 'E') | (message.type == 'C') | (message.type == 'D');
-      if (!is_order)
+      while(message_count--)
       {
-        lseek(fd, message_length, SEEK_CUR);
-        continue;
-      }
+        if (UNLIKELY(buffer_position + sizeof(MessageBlock::length) + sizeof(MessageBlock::type) > buffer_filled))
+          goto need_more_data;
 
-      recv(fd, &message.data, message_length - sizeof(message.type), MSG_WAITALL);
+        const MessageBlock *block = reinterpret_cast<MessageBlock *>(buffer + buffer_position);
 
-      switch (message.type)
-      {
-        case 'A':
-          logger.log("New order");
-          break;
-        case 'E':
-          logger.log("Execution notice");
-          break;
-        case 'C':
-          logger.log("Execution notice with trade info");
-          break;
-        case 'D':
-          logger.log("Order delete");
-          break;
+        const uint16_t block_length = ntohs(block->length) - sizeof(MessageBlock::type);
+        buffer_position += sizeof(MessageBlock::length);
+
+        const char message_type = block->type;
+        buffer_position += sizeof(MessageBlock::type);
+
+        if (UNLIKELY(buffer_position + block_length > buffer_filled))
+        {
+          buffer_position -= (sizeof(MessageBlock::length) + sizeof(MessageBlock::type));
+          goto need_more_data;
+        }
+
+        const char *message_data = buffer + buffer_position;
+        buffer_position += block_length;
+
+        switch (message_type)
+        {
+          case 'A':
+            handle_new_order(message_data);
+            break;
+          case 'E':
+            handle_execution_notice(message_data);
+            break;
+          case 'C':
+            handle_execution_notice_with_info(message_data);
+            break;
+          case 'D':
+            handle_order_delete(message_data);
+            break;
+        }
       }
     }
+
+  need_more_data:
+    memmove(buffer, buffer + buffer_position, buffer_filled - buffer_position);
+    buffer_filled -= buffer_position;
+    buffer_position = 0;
   }
 }
+
+void Client::handle_new_order(const char *message_data)
+{
+  logger.log("new_order\n");
+}
+
+void Client::handle_execution_notice(const char *message_data)
+{
+  logger.log("execution_notice\n");
+}
+
+void Client::handle_execution_notice_with_info(const char *message_data)
+{
+  logger.log("execution_notice_with_info\n");
+}
+
+void Client::handle_order_delete(const char *message_data)
+{
+  logger.log("order_delete\n");
+}
+

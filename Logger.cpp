@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 12:48:08                                                 
-last edited: 2025-03-15 12:48:08                                                
+last edited: 2025-03-15 18:05:36                                                
 
 ================================================================================*/
 
@@ -32,8 +32,7 @@ Logger::Logger(const std::string_view filename) :
 {
   bool error = false;
 
-  error |= (fallocate(fd, FALLOC_FL_KEEP_SIZE, 0, PREALLOCATED_FILE_SIZE) == -1);
-  error |= (io_uring_queue_init(1, &ring, 0) == -1);
+  error |= (io_uring_queue_init(1, &ring, IORING_SETUP_SQPOLL) == -1);
   error |= (io_uring_register_files(&ring, &fd, 1) == -1);
   iovec iov[2] = {{buffers[0], BUFFER_SIZE}, {buffers[1], BUFFER_SIZE}};
   error |= (io_uring_register_buffers(&ring, iov, 2) == -1);
@@ -88,10 +87,10 @@ void Logger::flush(void)
   io_uring_prep_write_fixed(sqe, fd, buffers[buf_idx], BUFFER_SIZE, -1, buf_idx);
   sqe->flags |= IOSQE_ASYNC | IOSQE_FIXED_FILE | IOSQE_IO_LINK | IOSQE_BUFFER_SELECT | IOSQE_CQE_SKIP_SUCCESS;
 
-  if (UNLIKELY(io_uring_submit(&ring) < 0))
-    utils::throw_error("Failed to submit writev operation");
-
   buf_idx ^= 1;
   write_ptr = buffers[buf_idx];
   end_ptr = write_ptr + BUFFER_SIZE;
+
+  if (UNLIKELY(fallocate(fd, 0, lseek(fd, 0, SEEK_END), BUFFER_SIZE) == -1))
+    utils::throw_error("Failed to allocate space for log file");
 }

@@ -10,7 +10,6 @@
 
 constexpr size_t BUFFER_SIZE = 32 * 1024 * 1024;
 constexpr uint16_t ALIGNMENT = 4096;
-constexpr size_t PREALLOCATED_FILE_SIZE = 365ULL * 24 * 60 * 60 * 100;
 
 class Logger
 {
