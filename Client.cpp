@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-16 11:40:26                                                
+last edited: 2025-03-16 15:43:16                                                
 
 ================================================================================*/
 
@@ -162,14 +162,16 @@ void Client::handle_new_order(const MessageBlock::NewOrder &message_data)
   constexpr uint16_t quantity_offset = price_offset + strlen("             Quantity: ");
   constexpr uint16_t orderbook_position_offset = quantity_offset + strlen("                  Orderbook Position: ");
 
-  const uint32_t  timestamp = utils::swap32(message_data.timestamp_nanoseconds);
-  const int32_t   price = utils::swap32(message_data.price);
-  const uint64_t  quantity = utils::swap64(message_data.quantity);
-  const uint32_t  orderbook_position = utils::swap32(message_data.orderbook_position);
+  const uint32_t timestamp = utils::swap32(message_data.timestamp_nanoseconds);
+  const int32_t  price = utils::swap32(message_data.price);
+  const uint64_t quantity = utils::swap64(message_data.quantity);
+  const uint32_t orderbook_position = utils::swap32(message_data.orderbook_position);
 
+  utils::ultoa(timestamp, buffer + timestamp_offset);
   buffer[side_offset] = message_data.side;
-
-  //TODO all the copies
+  utils::ultoa(price, buffer + price_offset);
+  utils::ultoa(quantity, buffer + quantity_offset);
+  utils::ultoa(orderbook_position, buffer + orderbook_position_offset);
 
   logger.log(std::string_view(buffer, buffer_len));
 }
@@ -183,8 +185,12 @@ void Client::handle_execution_notice(const MessageBlock::ExecutionNotice &messag
   constexpr uint16_t side_offset = timestamp_offset + strlen("           Side: ");
   constexpr uint16_t quantity_offset = side_offset + strlen("  Quantity: ");
 
+  const uint32_t timestamp = utils::swap32(message_data.timestamp_nanoseconds);
+  const uint64_t quantity = utils::swap64(message_data.executed_quantity);
+
+  utils::ultoa(timestamp, buffer + timestamp_offset);
   buffer[side_offset] = message_data.side;
-  //TODO all the copies
+  utils::ultoa(quantity, buffer + quantity_offset);
 
   logger.log(std::string_view(buffer, buffer_len));
 }
@@ -199,12 +205,14 @@ void Client::handle_execution_notice_with_trade_info(const MessageBlock::Executi
   constexpr uint16_t price_offset = side_offset + strlen("  Price: ");
   constexpr uint16_t quantity_offset = price_offset + strlen("             Quantity: ");
 
-  const uint32_t  timestamp = utils::swap32(message_data.timestamp_nanoseconds);
-  const int32_t   price = utils::swap32(message_data.trade_price);
-  const uint64_t  quantity = utils::swap64(message_data.executed_quantity);
+  const uint32_t timestamp = utils::swap32(message_data.timestamp_nanoseconds);
+  const int32_t  price = utils::swap32(message_data.trade_price);
+  const uint64_t quantity = utils::swap64(message_data.executed_quantity);
 
+  utils::ultoa(timestamp, buffer + timestamp_offset);
   buffer[side_offset] = message_data.side;
-  //TODO all the copies
+  utils::ultoa(price, buffer + price_offset);
+  utils::ultoa(quantity, buffer + quantity_offset);
 
   logger.log(std::string_view(buffer, buffer_len));
 }
@@ -217,8 +225,10 @@ void Client::handle_order_delete(const MessageBlock::DeletedOrder &message_data)
   constexpr uint16_t timestamp_offset = strlen("[Order Delete] Timestamp: ");
   constexpr uint16_t side_offset = timestamp_offset + strlen("           Side: ");
 
+  const uint32_t timestamp = utils::swap32(message_data.timestamp_nanoseconds);
+
+  utils::ultoa(timestamp, buffer + timestamp_offset);
   buffer[side_offset] = message_data.side;
-  //TODO all the copies
 
   logger.log(std::string_view(buffer, buffer_len));
 }
