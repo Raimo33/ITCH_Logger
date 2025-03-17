@@ -1,0 +1,10 @@
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+OrderBook
+.vscode/
+ITCH_Logger
+*.o
+*.s

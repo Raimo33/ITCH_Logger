@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-16 15:43:16                                                
+last edited: 2025-03-17 15:30:41                                                
 
 ================================================================================*/
 
@@ -37,10 +37,10 @@ COLD Client::~Client(void)
 
 COLD sockaddr_in Client::create_address(const std::string_view address_string) const
 {
-  const std::pair<std::string_view, std::string_view> address_parts = utils::split(address_string, ':');
+  const std::pair<std::string, std::string> address_parts = utils::split(address_string, ':');
 
-  std::string_view ip = address_parts.first;
-  std::string_view port = address_parts.second;
+  std::string ip = address_parts.first;
+  std::string port = address_parts.second;
 
   const bool error = (ip.empty() | port.empty());
   if (error)
@@ -60,8 +60,8 @@ COLD ip_mreq Client::create_mreq(void) const
 {
   ip_mreq mreq{};
 
-  mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-  mreq.imr_multiaddr = bind_address.sin_addr;
+  mreq.imr_interface.s_addr = bind_address.sin_addr.s_addr;
+  mreq.imr_multiaddr = multicast_address.sin_addr;
 
   return mreq;
 }

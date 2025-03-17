@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 21:14:56                                                 
-last edited: 2025-03-16 15:43:16                                                
+last edited: 2025-03-17 15:30:41                                                
 
 ================================================================================*/
 
@@ -22,14 +22,14 @@ namespace utils
     throw std::runtime_error(std::string(message));
   }
 
-  COLD std::pair<std::string_view, std::string_view> split(const std::string_view string, const char delimiter)
+  COLD std::pair<std::string, std::string> split(const std::string_view string, const char delimiter)
   {
     size_t pos = string.find(delimiter);
 
     if (pos != std::string_view::npos)
-      return {string.substr(0, pos), string.substr(pos + 1)};
+      return { std::string(string.substr(0, pos)), std::string(string.substr(pos + 1)) };
 
-    return {string, ""};
+    return { std::string(string), "" };
   }
 
   HOT uint8_t ultoa(uint64_t num, char *buffer)
