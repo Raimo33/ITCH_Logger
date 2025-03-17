@@ -12,5 +12,5 @@ add_executable(ITCH_Logger
 )
 
 target_compile_options(ITCH_Logger PRIVATE -Wall -Wextra -Werror -pedantic)
-target_compile_options(ITCH_Logger PRIVATE -O3 -march=native -flto)
-target_link_libraries(ITCH_Logger PRIVATE uring)
+target_compile_options(ITCH_Logger PRIVATE -O3 -march=znver2 -flto) 
+target_link_libraries(ITCH_Logger PRIVATE /usr/lib/liburing.a)
