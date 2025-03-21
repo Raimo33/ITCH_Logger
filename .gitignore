@@ -3,3 +3,4 @@ ITCH_Logger
 .vscode/
 *.d
 *.o
+itch_multicast.log

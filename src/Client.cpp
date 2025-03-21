@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-21 16:55:52                                                
+last edited: 2025-03-21 17:20:29                                                
 
 ================================================================================*/
 
@@ -28,7 +28,7 @@ COLD Client::Client(const std::string_view bind_address_str, const std::string_v
 {
   bool error = false;
 
-  error |= (bind(fd, reinterpret_cast<const sockaddr *>(&bind_address), sizeof(bind_address) == -1));
+  error |= (bind(fd, reinterpret_cast<const sockaddr *>(&bind_address), sizeof(bind_address)) == -1);
 
   ip_mreq mreq{};
   mreq.imr_interface.s_addr = bind_address.sin_addr.s_addr;
@@ -76,8 +76,10 @@ COLD int Client::createUdpSocket(void) const
 
   constexpr int enable = 1;
   constexpr int disable = 0;
+  //constexpr int priority = 255;
 
-  error |= (setsockopt(sock_fd, SOL_SOCKET, SO_ZEROCOPY, &enable, sizeof(enable)) == -1);
+  // error |= (setsockopt(sock_fd, SOL_SOCKET, SO_PRIORITY, &priority, sizeof(enable)) == -1);
+  // error |= (setsockopt(sock_fd, SOL_SOCKET, SO_ZEROCOPY, &enable, sizeof(enable)) == -1);
   error |= (setsockopt(sock_fd, IPPROTO_IP, IP_MULTICAST_LOOP, &disable, sizeof(disable)) == -1);
   error |= (setsockopt(sock_fd, SOL_SOCKET, SO_BUSY_POLL, &enable, sizeof(enable)) == -1);
 
@@ -113,9 +115,13 @@ void Client::run(void)
 
   while (true)
   {
+    printf("deb1\n");
+
     int8_t packets_count = recvmmsg(fd, packets, MAX_PACKETS, MSG_WAITFORONE, nullptr);
     if (packets_count == -1)
       utils::throw_error("Failed to receive messages");
+
+    printf("deb2\n");
 
     const MoldUDP64Header *header_ptr = headers;
     const char *payload_ptr = reinterpret_cast<char *>(payloads);
