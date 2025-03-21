@@ -5,14 +5,18 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-17 15:30:41                                                 
-last edited: 2025-03-21 17:43:35                                                
+last edited: 2025-03-21 18:34:30                                                
 
 ================================================================================*/
 
-#include "Client.hpp"
-#include "ErrorHandler.hpp"
-
 #include <iostream>
+
+#include "Client.hpp"
+#include "error.h"
+
+volatile bool error = false;
+
+void init_signal_handler(void);
 
 int main(int argc, char **argv)
 {
@@ -22,6 +26,22 @@ int main(int argc, char **argv)
     return 1;
   }
 
+  init_signal_handler();
+
   Client client(argv[1], argv[2]);
   client.run();
+}
+
+void init_signal_handler(void)
+{
+  struct sigaction sa{};
+
+  sa.sa_handler = [](int) { panic(); };
+
+  error |= (sigaction(SIGINT, &sa, nullptr) == -1);
+  error |= (sigaction(SIGTERM, &sa, nullptr) == -1);
+  error |= (sigaction(SIGQUIT, &sa, nullptr) == -1);
+  error |= (sigaction(SIGPIPE, &sa, nullptr) == -1);
+
+  CHECK_ERROR;
 }

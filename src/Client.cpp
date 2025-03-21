@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-21 17:43:34                                                
+last edited: 2025-03-21 18:34:30                                                
 
 ================================================================================*/
 
@@ -19,8 +19,7 @@ last edited: 2025-03-21 17:43:34
 #include "Client.hpp"
 #include "utils.hpp"
 #include "macros.hpp"
-
-extern volatile bool error;
+#include "error.h"
 
 COLD Client::Client(const std::string_view bind_address_str, const std::string_view multicast_address_str) :
   multicast_address(createAddress(multicast_address_str)),
@@ -36,6 +35,8 @@ COLD Client::Client(const std::string_view bind_address_str, const std::string_v
 
   error |= (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1);
   error |= (connect(fd, reinterpret_cast<const sockaddr *>(&multicast_address), sizeof(multicast_address)) == -1);
+
+  CHECK_ERROR;
 }
 
 COLD Client::~Client(void)
@@ -58,6 +59,8 @@ COLD sockaddr_in Client::createAddress(const std::string_view address_string) co
   address.sin_port = htons(std::stoi(port));
   error |= (inet_pton(AF_INET, ip.data(), &address.sin_addr) != 1);
 
+  CHECK_ERROR;
+
   return address;
 }
 
@@ -76,6 +79,8 @@ COLD int Client::createUdpSocket(void) const
   // error |= (setsockopt(sock_fd, SOL_SOCKET, SO_ZEROCOPY, &enable, sizeof(enable)) == -1);
   error |= (setsockopt(sock_fd, IPPROTO_IP, IP_MULTICAST_LOOP, &disable, sizeof(disable)) == -1);
   error |= (setsockopt(sock_fd, SOL_SOCKET, SO_BUSY_POLL, &enable, sizeof(enable)) == -1);
+
+  CHECK_ERROR;
 
   return sock_fd;
 }

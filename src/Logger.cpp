@@ -5,12 +5,9 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 12:48:08                                                 
-last edited: 2025-03-21 17:43:34                                                
+last edited: 2025-03-21 18:34:30                                                
 
 ================================================================================*/
-
-#include "Logger.hpp"
-#include "utils.hpp"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -19,7 +16,9 @@ last edited: 2025-03-21 17:43:34
 #include <liburing.h>
 #include <sys/mman.h>
 
-extern volatile bool error;
+#include "Logger.hpp"
+#include "utils.hpp"
+#include "error.h"
 
 Logger::Logger(const std::string_view filename) :
   filename(filename),
@@ -39,12 +38,16 @@ Logger::Logger(const std::string_view filename) :
   error |= (madvise(buffers[0], WRITE_BUFFER_SIZE, MADV_SEQUENTIAL) == -1);
   error |= (madvise(buffers[1], WRITE_BUFFER_SIZE, MADV_SEQUENTIAL) == -1);
   error |= (posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL) == -1);
+
+  CHECK_ERROR;
 }
 
 int Logger::createFile(void) const
 {
   const int fd = open(filename.data(), O_WRONLY | O_CREAT | O_TRUNC | O_DIRECT | O_NOATIME | O_LARGEFILE, 0666);
   error |= (fd == -1);
+
+  CHECK_ERROR;
 
   return fd;
 }
@@ -87,4 +90,5 @@ void Logger::flush(void)
   end_ptr = write_ptr + WRITE_BUFFER_SIZE;
 
   error |= (UNLIKELY(fallocate(fd, 0, lseek(fd, 0, SEEK_END), WRITE_BUFFER_SIZE) == -1));
+  CHECK_ERROR;
 }
