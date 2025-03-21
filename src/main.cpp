@@ -5,14 +5,14 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-17 15:30:41                                                 
-last edited: 2025-03-21 18:34:30                                                
+last edited: 2025-03-21 20:36:24                                                
 
 ================================================================================*/
 
 #include <iostream>
 
 #include "Client.hpp"
-#include "error.h"
+#include "error.hpp"
 
 volatile bool error = false;
 

@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-21 18:34:30                                                
+last edited: 2025-03-21 20:36:24                                                
 
 ================================================================================*/
 
@@ -19,7 +19,7 @@ last edited: 2025-03-21 18:34:30
 #include "Client.hpp"
 #include "utils.hpp"
 #include "macros.hpp"
-#include "error.h"
+#include "error.hpp"
 
 COLD Client::Client(const std::string_view bind_address_str, const std::string_view multicast_address_str) :
   multicast_address(createAddress(multicast_address_str)),

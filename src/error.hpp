@@ -1,6 +1,6 @@
 /*================================================================================
 
-File: error.h                                                                   
+File: error.hpp                                                                   
 Creator: Claudio Raimondi                                                       
 Email: claudio.raimondi@pm.me                                                   
 
