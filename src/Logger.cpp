@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 12:48:08                                                 
-last edited: 2025-03-17 15:30:41                                                
+last edited: 2025-03-21 16:55:52                                                
 
 ================================================================================*/
 
@@ -21,7 +21,7 @@ last edited: 2025-03-17 15:30:41
 
 Logger::Logger(const std::string_view filename) :
   filename(filename),
-  fd(create_file()),
+  fd(createFile()),
   buffers{
     static_cast<char *>(aligned_alloc(ALIGNMENT, WRITE_BUFFER_SIZE)),
     static_cast<char *>(aligned_alloc(ALIGNMENT, WRITE_BUFFER_SIZE))
@@ -44,7 +44,7 @@ Logger::Logger(const std::string_view filename) :
     utils::throw_error("Failed to initialize logger");
 }
 
-int Logger::create_file(void) const
+int Logger::createFile(void) const
 {
   const int fd = open(filename.data(), O_WRONLY | O_CREAT | O_TRUNC | O_DIRECT | O_NOATIME | O_LARGEFILE, 0666);
 

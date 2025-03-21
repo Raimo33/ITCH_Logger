@@ -1,5 +1,5 @@
 .env
 ITCH_Logger
 .vscode/
-.d
-.o
+*.d
+*.o

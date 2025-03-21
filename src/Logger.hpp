@@ -22,7 +22,7 @@ class Logger
 
   private:
 
-    int create_file(void) const;
+    int createFile(void) const;
     void flush(void);
 
     const std::string filename;

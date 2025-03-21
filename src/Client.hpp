@@ -18,18 +18,26 @@ class Client
 
   private:
     
-    sockaddr_in create_address(const std::string_view address_string) const;
-    ip_mreq create_mreq(void) const;
-    int create_udp_socket(void) const;
+    sockaddr_in createAddress(const std::string_view address_string) const;
+    ip_mreq createMreq(void) const;
+    int createUdpSocket(void) const;
 
-    void handle_new_order(const MessageBlock &block);
-    void handle_execution_notice(const MessageBlock &block);
-    void handle_execution_notice_with_trade_info(const MessageBlock &block);
-    void handle_order_delete(const MessageBlock &block);
+    void processMessageBlocks(const char *buffer, uint16_t blocks_count);
+
+    void handleNewOrder(const MessageBlock &block);
+    void handleExecutionNotice(const MessageBlock &block);
+    void handleExecutionNoticeWithTradeInfo(const MessageBlock &block);
+    void handleDeletedOrder(const MessageBlock &block);
+    void handleSeconds(const MessageBlock &block);
+    void handleSeriesInfoBasic(const MessageBlock &block);
+    void handleSeriesInfoBasicCombination(const MessageBlock &block);
+    void handleTickSizeData(const MessageBlock &block);
+    void handleSystemEvent(const MessageBlock &block);
+    void handleTradingStatus(const MessageBlock &block);
+    void handleEquilibriumPrice(const MessageBlock &block);
 
     const sockaddr_in multicast_address;
     const sockaddr_in bind_address;
-    const ip_mreq mreq;
     const int fd;
     Logger logger;
 };
