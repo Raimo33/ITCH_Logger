@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-21 17:20:29                                                
+last edited: 2025-03-21 17:43:34                                                
 
 ================================================================================*/
 
@@ -20,14 +20,14 @@ last edited: 2025-03-21 17:20:29
 #include "utils.hpp"
 #include "macros.hpp"
 
+extern volatile bool error;
+
 COLD Client::Client(const std::string_view bind_address_str, const std::string_view multicast_address_str) :
   multicast_address(createAddress(multicast_address_str)),
   bind_address(createAddress(bind_address_str)),
   fd(createUdpSocket()),
   logger("itch_multicast.log")
 {
-  bool error = false;
-
   error |= (bind(fd, reinterpret_cast<const sockaddr *>(&bind_address), sizeof(bind_address)) == -1);
 
   ip_mreq mreq{};
@@ -36,9 +36,6 @@ COLD Client::Client(const std::string_view bind_address_str, const std::string_v
 
   error |= (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1);
   error |= (connect(fd, reinterpret_cast<const sockaddr *>(&multicast_address), sizeof(multicast_address)) == -1);
-
-  if (error)
-    utils::throw_error("Failed to initialize client");
 }
 
 COLD Client::~Client(void)
@@ -53,16 +50,13 @@ COLD sockaddr_in Client::createAddress(const std::string_view address_string) co
   std::string ip = address_parts.first;
   std::string port = address_parts.second;
 
-  const bool error = (ip.empty() | port.empty());
-  if (error)
-    utils::throw_error("Invalid address string");
+  error |= (ip.empty() | port.empty());
   
   sockaddr_in address{};
 
   address.sin_family = AF_INET;
   address.sin_port = htons(std::stoi(port));
-  if (inet_pton(AF_INET, ip.data(), &address.sin_addr) != 1)
-    utils::throw_error("Invalid IP address");
+  error |= (inet_pton(AF_INET, ip.data(), &address.sin_addr) != 1);
 
   return address;
 }
@@ -82,9 +76,6 @@ COLD int Client::createUdpSocket(void) const
   // error |= (setsockopt(sock_fd, SOL_SOCKET, SO_ZEROCOPY, &enable, sizeof(enable)) == -1);
   error |= (setsockopt(sock_fd, IPPROTO_IP, IP_MULTICAST_LOOP, &disable, sizeof(disable)) == -1);
   error |= (setsockopt(sock_fd, SOL_SOCKET, SO_BUSY_POLL, &enable, sizeof(enable)) == -1);
-
-  if (error)
-    utils::throw_error("Failed to create socket");
 
   return sock_fd;
 }
@@ -118,8 +109,7 @@ void Client::run(void)
     printf("deb1\n");
 
     int8_t packets_count = recvmmsg(fd, packets, MAX_PACKETS, MSG_WAITFORONE, nullptr);
-    if (packets_count == -1)
-      utils::throw_error("Failed to receive messages");
+    error |= (packets_count == -1);
 
     printf("deb2\n");
 

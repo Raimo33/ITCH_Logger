@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 12:48:08                                                 
-last edited: 2025-03-21 16:55:52                                                
+last edited: 2025-03-21 17:43:34                                                
 
 ================================================================================*/
 
@@ -19,6 +19,8 @@ last edited: 2025-03-21 16:55:52
 #include <liburing.h>
 #include <sys/mman.h>
 
+extern volatile bool error;
+
 Logger::Logger(const std::string_view filename) :
   filename(filename),
   fd(createFile()),
@@ -30,8 +32,6 @@ Logger::Logger(const std::string_view filename) :
   write_ptr(buffers[buf_idx]),
   end_ptr(buffers[buf_idx] + WRITE_BUFFER_SIZE)
 {
-  bool error = false;
-
   error |= (io_uring_queue_init(1, &ring, IORING_SETUP_SQPOLL) == -1);
   error |= (io_uring_register_files(&ring, &fd, 1) == -1);
   iovec iov[2] = {{buffers[0], WRITE_BUFFER_SIZE}, {buffers[1], WRITE_BUFFER_SIZE}};
@@ -39,17 +39,12 @@ Logger::Logger(const std::string_view filename) :
   error |= (madvise(buffers[0], WRITE_BUFFER_SIZE, MADV_SEQUENTIAL) == -1);
   error |= (madvise(buffers[1], WRITE_BUFFER_SIZE, MADV_SEQUENTIAL) == -1);
   error |= (posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL) == -1);
-
-  if (error)
-    utils::throw_error("Failed to initialize logger");
 }
 
 int Logger::createFile(void) const
 {
   const int fd = open(filename.data(), O_WRONLY | O_CREAT | O_TRUNC | O_DIRECT | O_NOATIME | O_LARGEFILE, 0666);
-
-  if (fd == -1)
-    utils::throw_error("Failed to open log file");
+  error |= (fd == -1);
 
   return fd;
 }
@@ -91,6 +86,5 @@ void Logger::flush(void)
   write_ptr = buffers[buf_idx];
   end_ptr = write_ptr + WRITE_BUFFER_SIZE;
 
-  if (UNLIKELY(fallocate(fd, 0, lseek(fd, 0, SEEK_END), WRITE_BUFFER_SIZE) == -1))
-    utils::throw_error("Failed to allocate space for log file");
+  error |= (UNLIKELY(fallocate(fd, 0, lseek(fd, 0, SEEK_END), WRITE_BUFFER_SIZE) == -1));
 }
