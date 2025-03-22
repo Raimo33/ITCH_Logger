@@ -20,4 +20,3 @@ last edited: 2025-03-08 21:15:54
 #define UNREACHABLE               __builtin_unreachable()
 #define PREFETCH_R(x, priority)   __builtin_prefetch(x, 0, priority)
 #define PREFETCH_W(x, priority)   __builtin_prefetch(x, 1, priority)
-#define PREFETCH_RW(x, priority)  __builtin_prefetch(x, 1, priority)
