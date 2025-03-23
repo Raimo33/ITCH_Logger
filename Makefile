@@ -8,6 +8,7 @@ CXX := g++
 CXXFLAGS += -std=c++23
 CXXFLAGS += -Wall -Wextra -Werror -pedantic
 CXXFLAGS += -O3 -march=znver2 -mtune=znver2 -flto
+CXXFLAGS += -falign-functions=32 -falign-loops=32 -falign-jumps=32 -falign-labels=32
 LDFLAGS = -static -static-libgcc -static-libstdc++
 LDFLAGS += -luring
 
