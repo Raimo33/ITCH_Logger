@@ -7,144 +7,29 @@ DEPS := $(OBJS:.o=.d)
 CXX := g++
 CXXFLAGS += -std=c++23
 CXXFLAGS += -Wall -Wextra -Werror -pedantic
-CXXFLAGS += -march=znver2 -mtune=znver2 -flto
-#TODO does the order matter?
-CXXFLAGS += 
-  -fauto-inc-dec
-  -fbranch-count-reg
-  -fcombine-stack-adjustments
-  -fcompare-elim
-  -fcprop-registers
-  -fdce
-  -fdefer-pop
-  -fdelayed-branch
-  -fdse
-  -fforward-propagate
-  -fguess-branch-probability
-  -fif-conversion
-  -fif-conversion2
-  -finline-functions-called-once
-  -fipa-modref
-  -fipa-profile
-  -fipa-pure-const
-  -fipa-reference
-  -fipa-reference-addressable
-  -fmerge-constants
-  -fmove-loop-invariants
-  -fmove-loop-stores
-  -fomit-frame-pointer
-  -freorder-blocks
-  -fshrink-wrap
-  -fshrink-wrap-separate
-  -fsplit-wide-types
-  -fssa-backprop
-  -fssa-phiopt
-  -ftree-bit-ccp
-  -ftree-ccp
-  -ftree-ch
-  -ftree-coalesce-vars
-  -ftree-copy-prop
-  -ftree-dce
-  -ftree-dominator-opts
-  -ftree-dse
-  -ftree-forwprop
-  -ftree-fre
-  -ftree-phiprop
-  -ftree-pta
-  -ftree-scev-cprop
-  -ftree-sink
-  -ftree-slsr
-  -ftree-sra
-  -ftree-ter
-  -funit-at-a-time
-  -falign-functions
-  -falign-jumps
-  -falign-labels
-  -falign-loops
-  -fcaller-saves
-  -fcode-hoisting
-  -fcrossjumping
-  -fcse-follow-jumps
-  -fcse-skip-blocks
-  -fdelete-null-pointer-checks
-  -fdevirtualize
-  -fdevirtualize-speculatively
-  -fexpensive-optimizations
-  -ffinite-loops
-  -fgcse
-  -fgcse-lm
-  -fhoist-adjacent-loads
-  -finline-functions
-  -finline-small-functions
-  -findirect-inlining
-  -fipa-bit-cp
-  -fipa-cp
-  -fipa-icf
-  -fipa-ra
-  -fipa-sra
-  -fipa-vrp
-  -fisolate-erroneous-paths-dereference
-  -flra-remat
-  -foptimize-crc
-  -foptimize-sibling-calls
-  -foptimize-strlen
-  -fpartial-inlining
-  -fpeephole2
-  -freorder-blocks-algorithm=stc
-  -freorder-blocks-and-partition
-  -freorder-functions
-  -frerun-cse-after-loop
-  -fschedule-insns
-  -fschedule-insns2
-  -fsched-interblock
-  -fsched-spec
-  -fstore-merging
-  -fstrict-aliasing
-  -fthread-jumps
-  -ftree-builtin-call-dce
-  -ftree-loop-vectorize
-  -ftree-pre
-  -ftree-slp-vectorize
-  -ftree-switch-conversion
-  -ftree-tail-merge
-  -ftree-vrp
-  -fvect-cost-model=very-cheap
-  -fgcse-after-reload
-  -fipa-cp-clone
-  -floop-interchange
-  -floop-unroll-and-jam
-  -fpeel-loops
-  -fpredictive-commoning
-  -fsplit-loops
-  -fsplit-paths
-  -ftree-loop-distribution
-  -ftree-partial-pre
-  -funswitch-loops
-  -fvect-cost-model=dynamic
-  -fversion-loops-for-strides
-  -favoid-store-forwarding
-  -ffp-contract=fast
-  -fearly-inlining
-  -fmodulo-sched
-  -fmodulo-sched-allow-regmoves
-  -fsplit-wide-types-early
-  -fgcse-sm
-  -fgcse-las
-  -faggressive-loop-optimizations
-  -fdevirtualize-at-ltrans
-  -flive-range-shrinkage
-  -fira-hoist-pressure
-  -fira-loop-pressure
-  -freschedule-modulo-scheduled-loops
-  -fselective-scheduling
-  -fselective-scheduling2
-  -fsel-sched-pipelining
-  -fsel-sched-pipelining-outer-loops
-  -fipa-pta
-  -flate-combine-instructions
-  -fisolate-erroneous-paths-attribute
+CXXFLAGS += -march=znver2 -mtune=znver2
+CXXFLAGS += -funit-at-a-time -fomit-frame-pointer -fno-exceptions -fno-rtti -fstrict-aliasing -fexpensive-optimizations -fvect-cost-model=dynamic #-fno-stack-protector
+CXXFLAGS += -fno-math-errno -freciprocal-math -fsingle-precision-constant -ffp-contract=fast
+CXXFLAGS += -ftree-pta -ftree-copy-prop -ftree-forwprop -ftree-phiprop -ftree-scev-cprop
+CXXFLAGS += -ftree-dce -ftree-builtin-call-dce -ftree-ccp -ftree-bit-ccp -ftree-dominator-opts -ftree-ch -ftree-coalesce-vars -ftree-sink -ftree-slsr -ftree-sra -ftree-pre -ftree-partial-pre -ftree-dse -ftree-vrp
+CXXFLAGS += -ftree-vectorize -ftree-slp-vectorize -ftree-switch-conversion -ftree-tail-merge -ftree-ter
+CXXFLAGS += -fgcse -fgcse-lm -fgcse-sm -fgcse-las -fgcse-after-reload -fweb -flive-range-shrinkage -fsplit-wide-types -fsplit-wide-types-early 
+CXXFLAGS += -fdce -fdse -fcse-follow-jumps -fcse-skip-blocks -fmalloc-dce=2 -fdelete-null-pointer-checks -fcrossjumping -fisolate-erroneous-paths-attribute
+CXXFLAGS += -fdevirtualize -fdevirtualize-speculatively -fdevirtualize-at-ltrans -fstdarg-opt
+CXXFLAGS += -fauto-inc-dec -fmerge-constants -fif-conversion -fif-conversion2 -fcompare-elim -fcprop-registers -fforward-propagate -fcombine-stack-adjustments -fssa-backprop -fssa-phiopt
+CXXFLAGS += -foptimize-sibling-calls -foptimize-crc -foptimize-strlen
+CXXFLAGS += -faggressive-loop-optimizations -ffinite-loops -fversion-loops-for-strides -fivopts -fmove-loop-invariants -fmove-loop-stores -ftree-loop-ivcanon -ftree-loop-linear -floop-nest-optimize -floop-block -floop-strip-mine -floop-interchange -loop-distribution -fsplit-loops -funswitch-loops -fpeel-loops -ftree-loop-if-convert -ftree-loop-im -fsplit-ivs-in-unroller -funroll-loops -floop-unroll-and-jam -ftree-loop-vectorize -fira-loop-pressure -fprefetch-loop-arrays -frerun-cse-after-loop
+CXXFLAGS += -fmodulo-sched -fmodulo-sched-allow-regmoves -freschedule-modulo-scheduled-loops
+CXXFLAGS += -fearly-inlining -findirect-inlining -fpartial-inlining -finline-functions -finline-functions-called-once -finline-small-functions
+CXXFLAGS += -fschedule-insns -fschedule-insns2 -fsched-interblock -fsched-spec -fselective-scheduling -fselective-scheduling2 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops
+CXXFLAGS += -fshrink-wrap -fshrink-wrap-separate 
+CXXFLAGS += -fipa-profile -fipa-modref -fipa-pure-const -fipa-strict-aliasing -fipa-reference -fipa-reference-addressable -fipa-vrp -fipa-cp -fipa-bit-cp -fipa-icf -fipa-sra -fipa-ra -fipa-pta -fipa-cp-clone
+CXXFLAGS += -flate-combine-instructions -fpeephole2 -flra-remat -fallow-store-data-races -fstore-merging -fthread-jumps -fpredictive-commoning -fsplit-paths
+CXXFLAGS += -freorder-blocks -freorder-blocks-algorithm=stc -freorder-blocks-and-partition -freorder-functions -fcode-hoisting -fhoist-adjacent-loads -fira-hoist-pressure
+CXXFLAGS += -fcaller-saves -fdefer-pop -fdelayed-branch -fguess-branch-probability
+CXXFLAGS += -falign-functions -falign-jumps -falign-labels -falign-loops
+CXXFLAGS += -fno-plt -fuse-linker-plugin -fsection-anchors -flto
 
-  #TODO -ftree-sink ¶
 LDFLAGS = -static -static-libgcc -static-libstdc++
 LDFLAGS += -luring
 

@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-22 22:21:15                                                
+last edited: 2025-03-24 21:54:41                                                
 
 ================================================================================*/
 
@@ -133,6 +133,8 @@ void Client::run(void)
       payload_ptr += MAX_MSG_SIZE;
     }
   }
+
+  UNREACHABLE;
 }
 
 HOT void Client::processMessageBlocks(const char *buffer, uint16_t blocks_count)
