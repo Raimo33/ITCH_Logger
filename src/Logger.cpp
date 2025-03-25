@@ -68,7 +68,7 @@ void Logger::log(const std::string_view message)
 
   while (remaining > 0)
   {
-    const size_t to_copy = utils::min<size_t>(remaining, end_ptr - write_ptr);
+    const size_t to_copy = std::min<size_t>(remaining, end_ptr - write_ptr);
     std::memcpy(write_ptr, data, to_copy);
     write_ptr += to_copy;
     data += to_copy;
