@@ -25,7 +25,7 @@ COLD Client::Client(const std::string_view bind_address_str, const std::string_v
   multicast_address(createAddress(multicast_address_str)),
   bind_address(createAddress(bind_address_str)),
   fd(createUdpSocket()),
-  logger("itch_multicast_")
+  logger("itch_multicast")
 {
   error |= (bind(fd, reinterpret_cast<const sockaddr *>(&bind_address), sizeof(bind_address)) == -1);
 

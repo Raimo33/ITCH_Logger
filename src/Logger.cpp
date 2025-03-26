@@ -53,10 +53,19 @@ Logger::Logger(const std::string_view filename_template) :
 
 int Logger::createFile(const std::chrono::system_clock::time_point &tp)
 {
-  const std::string filename = filename_template std::format("{:%Y-%m-%d}", tp) + ".log"; //TODO optimize
-  const int fd = open(filename.data(), O_WRONLY | O_CREAT | O_TRUNC | O_DIRECT | O_NOATIME | O_LARGEFILE, 0666);
+  constexpr uint8_t date_len = strlen("YYYY-MM-DD");
+  constexpr uint8_t suffix_len = strlen(".log");
 
+  std::string filename;
+  filename.reserve(filename_template.size() + 1 + date_len + suffix_len);
+  filename.append(filename_template);
+  filename.append("_");
+  filename.append(std::format("{:%Y-%m-%d}", tp));
+  filename.append(".log");
+
+  const int fd = open(filename.data(), O_WRONLY | O_CREAT | O_TRUNC | O_DIRECT | O_NOATIME | O_LARGEFILE, 0666);
   error |= (fd == -1);
+
   CHECK_ERROR;
 
   return fd;
