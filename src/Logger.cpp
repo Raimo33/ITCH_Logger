@@ -37,7 +37,7 @@ Logger::Logger(const std::string_view filename_template) :
   write_ptr(buffers[buf_idx]),
   end_ptr(buffers[buf_idx] + WRITE_BUFFER_SIZE)
 {
-  error |= (buffers[0] == nullptr | buffers[1] == nullptr);
+  error |= ((buffers[0] == nullptr) | (buffers[1] == nullptr));
 
   error |= (io_uring_queue_init(1, &ring, IORING_SETUP_SQPOLL) == -1);
   error |= (io_uring_register_files(&ring, fds.data(), 2) == -1);

@@ -3,6 +3,7 @@
 #include <string>
 #include <string_view>
 #include <array>
+#include <chrono>
 #include <cstdint>
 #include <sys/uio.h>
 #include <liburing.h>
