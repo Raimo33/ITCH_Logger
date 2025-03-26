@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 12:48:08                                                 
-last edited: 2025-03-21 20:36:24                                                
+last edited: 2025-03-26 15:31:24                                                
 
 ================================================================================*/
 
@@ -23,12 +23,9 @@ last edited: 2025-03-21 20:36:24
 #include "utils.hpp"
 #include "error.hpp"
 
-Logger::Logger(const std::string_view filename_template) :
-  filename_template(filename_template),
-  fds{
-    createFile(std::chrono::system_clock::now()),
-    createFile(std::chrono::system_clock::now() + std::chrono::hours(24))
-  },
+Logger::Logger(const std::string_view filename) :
+  filename(filename),
+  fd(createFile(std::chrono::system_clock::now())),
   buffers{
     static_cast<char *>(aligned_alloc(ALIGNMENT, WRITE_BUFFER_SIZE)),
     static_cast<char *>(aligned_alloc(ALIGNMENT, WRITE_BUFFER_SIZE))
@@ -40,13 +37,12 @@ Logger::Logger(const std::string_view filename_template) :
   error |= ((buffers[0] == nullptr) | (buffers[1] == nullptr));
 
   error |= (io_uring_queue_init(1, &ring, IORING_SETUP_SQPOLL) == -1);
-  error |= (io_uring_register_files(&ring, fds.data(), 2) == -1);
+  error |= (io_uring_register_files(&ring, &fd, 1) == -1);
   iovec iov[2] = {{buffers[0], WRITE_BUFFER_SIZE}, {buffers[1], WRITE_BUFFER_SIZE}};
   error |= (io_uring_register_buffers(&ring, iov, 2) == -1);
   error |= (madvise(buffers[0], WRITE_BUFFER_SIZE, MADV_SEQUENTIAL) == -1);
   error |= (madvise(buffers[1], WRITE_BUFFER_SIZE, MADV_SEQUENTIAL) == -1);
-  error |= (posix_fadvise(fds[0], 0, 0, POSIX_FADV_SEQUENTIAL) == -1);
-  error |= (posix_fadvise(fds[1], 0, 0, POSIX_FADV_SEQUENTIAL) == -1);
+  error |= (posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL) == -1);
 
   CHECK_ERROR;
 }
@@ -57,8 +53,8 @@ int Logger::createFile(const std::chrono::system_clock::time_point &tp)
   constexpr uint8_t suffix_len = strlen(".log");
 
   std::string filename;
-  filename.reserve(filename_template.size() + 1 + date_len + suffix_len);
-  filename.append(filename_template);
+  filename.reserve(filename.size() + 1 + date_len + suffix_len);
+  filename.append(filename);
   filename.append("_");
   filename.append(std::format("{:%Y-%m-%d}", tp));
   filename.append(".log");
@@ -77,20 +73,17 @@ Logger::~Logger()
   io_uring_queue_exit(&ring);
   free(buffers[0]);
   free(buffers[1]);
-  close(fds[0]);
-  close(fds[1]);
+  close(fd);
 }
 
 void Logger::rotateFiles(void)
 {
-  close(fds[fd_idx]);
-  fds[fd_idx] = createFile(std::chrono::system_clock::now() + std::chrono::hours(24));
+  close(fd);
+  fd = createFile(std::chrono::system_clock::now());
 
-  error |= posix_fadvise(fds[fd_idx], 0, 0, POSIX_FADV_SEQUENTIAL);
-  error |= io_uring_register_files(&ring, &fds[fd_idx], 1);
+  error |= posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL);
+  error |= io_uring_register_files(&ring, &fd, 1);
   CHECK_ERROR;
-
-  fd_idx ^= 1;
 }
 
 void Logger::log(const std::string_view message)
@@ -113,8 +106,6 @@ void Logger::log(const std::string_view message)
 
 void Logger::flush(void)
 {
-  const int fd = fds[fd_idx];
-
   io_uring_sqe *sqe = io_uring_get_sqe(&ring);
   io_uring_prep_write_fixed(sqe, fd, buffers[buf_idx], WRITE_BUFFER_SIZE, -1, buf_idx);
   sqe->flags |= IOSQE_ASYNC | IOSQE_FIXED_FILE | IOSQE_IO_LINK | IOSQE_BUFFER_SELECT | IOSQE_CQE_SKIP_SUCCESS;

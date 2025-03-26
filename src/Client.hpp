@@ -36,8 +36,8 @@ class Client
     void handleTradingStatus(const MessageBlock &block);
     void handleEquilibriumPrice(const MessageBlock &block);
 
-    const sockaddr_in multicast_address;
     const sockaddr_in bind_address;
+    const sockaddr_in multicast_address;
     const int fd;
     Logger logger;
 };

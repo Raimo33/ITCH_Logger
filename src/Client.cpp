@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-24 21:54:41                                                
+last edited: 2025-03-26 15:31:24                                                
 
 ================================================================================*/
 
@@ -22,8 +22,8 @@ last edited: 2025-03-24 21:54:41
 #include "error.hpp"
 
 COLD Client::Client(const std::string_view bind_address_str, const std::string_view multicast_address_str) :
-  multicast_address(createAddress(multicast_address_str)),
   bind_address(createAddress(bind_address_str)),
+  multicast_address(createAddress(multicast_address_str)),
   fd(createUdpSocket()),
   logger("itch_multicast")
 {
@@ -34,7 +34,6 @@ COLD Client::Client(const std::string_view bind_address_str, const std::string_v
   mreq.imr_multiaddr.s_addr = multicast_address.sin_addr.s_addr;
 
   error |= (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1);
-  error |= (connect(fd, reinterpret_cast<const sockaddr *>(&multicast_address), sizeof(multicast_address)) == -1);
 
   CHECK_ERROR;
 }
@@ -251,15 +250,13 @@ void Client::handleDeletedOrder(const MessageBlock &block)
   constexpr uint16_t timestamp_offset = strlen("[Deleted Order] Timestamp: ");
   constexpr uint16_t side_offset = timestamp_offset + strlen("           Side: ");
 
-  const uint32_t timestamp = bswap_32(block.order_delete.timestamp_nanoseconds);
+  const uint32_t timestamp = bswap_32(block.deleted_order.timestamp_nanoseconds);
 
   utils::ultoa(timestamp, buffer + timestamp_offset);
-  buffer[side_offset] = block.order_delete.side;
+  buffer[side_offset] = block.deleted_order.side;
 
   logger.log(std::string_view(buffer, buffer_len));
 }
-
-//TODO call rotateFiles when new trading day begins
 
 void Client::handleSeconds(const MessageBlock &block)
 {
@@ -287,8 +284,14 @@ void Client::handleTickSizeData(const MessageBlock &block)
 
 void Client::handleSystemEvent(const MessageBlock &block)
 {
-  (void)block;
-  return;
+  switch (block.system_event_data.event_code)
+  {
+    case 'O':
+      logger.rotateFiles();
+      break;
+    // case 'C':
+      //stop
+  }
 }
 
 void Client::handleTradingStatus(const MessageBlock &block)

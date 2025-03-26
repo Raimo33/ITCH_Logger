@@ -16,7 +16,7 @@ class Logger
 {
   public:
 
-    Logger(const std::string_view filename_template);
+    Logger(const std::string_view filename);
     ~Logger();
 
     void log(const std::string_view message);
@@ -27,8 +27,8 @@ class Logger
     int createFile(const std::chrono::system_clock::time_point &tp);
     void flush(void);
 
-    const std::string filename_template;
-    std::array<int, 2> fds;
+    const std::string filename;
+    int fd;
     std::array<char *, 2> buffers;
     uint8_t buf_idx;
     uint8_t fd_idx;
