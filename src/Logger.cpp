@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 12:48:08                                                 
-last edited: 2025-03-26 15:35:21                                                
+last edited: 2025-03-26 15:37:26                                                
 
 ================================================================================*/
 
@@ -49,9 +49,6 @@ Logger::Logger(const std::string_view filename) :
 
 int Logger::createFile(const std::chrono::system_clock::time_point &tp)
 {
-  constexpr uint8_t date_len = strlen("YYYY-MM-DD");
-  constexpr uint8_t suffix_len = strlen(".log");
-
   std::string full_filename(this->filename);
   full_filename.append("_");
   full_filename.append(std::format("{:%Y-%m-%d}", tp));
