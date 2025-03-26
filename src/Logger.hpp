@@ -9,7 +9,7 @@
 #include <liburing.h>
 #include <memory>
 
-constexpr size_t WRITE_BUFFER_SIZE = 32 * 1024 * 1024;
+constexpr size_t WRITE_BUFFER_SIZE = 1024;
 constexpr uint16_t ALIGNMENT = 4096;
 
 class Logger

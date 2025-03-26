@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 12:48:08                                                 
-last edited: 2025-03-26 15:37:26                                                
+last edited: 2025-03-26 20:26:53                                                
 
 ================================================================================*/
 
@@ -23,12 +23,12 @@ last edited: 2025-03-26 15:37:26
 #include "utils.hpp"
 #include "error.hpp"
 
-Logger::Logger(const std::string_view filename) :
+COLD Logger::Logger(const std::string_view filename) :
   filename(filename),
   fd(createFile(std::chrono::system_clock::now())),
   buffers{
-    static_cast<char *>(aligned_alloc(ALIGNMENT, WRITE_BUFFER_SIZE)),
-    static_cast<char *>(aligned_alloc(ALIGNMENT, WRITE_BUFFER_SIZE))
+    static_cast<char*>(operator new(WRITE_BUFFER_SIZE, std::align_val_t(ALIGNMENT))),
+    static_cast<char*>(operator new(WRITE_BUFFER_SIZE, std::align_val_t(ALIGNMENT)))
   },
   buf_idx(0),
   write_ptr(buffers[buf_idx]),
@@ -47,7 +47,7 @@ Logger::Logger(const std::string_view filename) :
   CHECK_ERROR;
 }
 
-int Logger::createFile(const std::chrono::system_clock::time_point &tp)
+COLD int Logger::createFile(const std::chrono::system_clock::time_point &tp)
 {
   std::string full_filename(this->filename);
   full_filename.append("_");
@@ -62,7 +62,7 @@ int Logger::createFile(const std::chrono::system_clock::time_point &tp)
   return fd;
 }
 
-Logger::~Logger()
+COLD Logger::~Logger()
 {
   io_uring_unregister_files(&ring);
   io_uring_queue_exit(&ring);
@@ -71,7 +71,7 @@ Logger::~Logger()
   close(fd);
 }
 
-void Logger::rotateFiles(void)
+COLD void Logger::rotateFiles(void)
 {
   close(fd);
   fd = createFile(std::chrono::system_clock::now());
@@ -81,10 +81,12 @@ void Logger::rotateFiles(void)
   CHECK_ERROR;
 }
 
-void Logger::log(const std::string_view message)
+HOT void Logger::log(const std::string_view message)
 {
   const char *data = message.data();
   size_t remaining = message.size();
+
+  printf("remaining: %zu\n", remaining);
 
   while (remaining > 0)
   {
@@ -99,7 +101,7 @@ void Logger::log(const std::string_view message)
   }
 }
 
-void Logger::flush(void)
+HOT void Logger::flush(void)
 {
   io_uring_sqe *sqe = io_uring_get_sqe(&ring);
   io_uring_prep_write_fixed(sqe, fd, buffers[buf_idx], WRITE_BUFFER_SIZE, -1, buf_idx);

@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-26 18:45:07                                                
+last edited: 2025-03-26 20:26:53                                                
 
 ================================================================================*/
 
@@ -74,7 +74,7 @@ COLD int Client::createUdpSocket(void) const
   return sock_fd;
 }
 
-void Client::run(void)
+COLD void Client::run(void)
 {
   constexpr uint8_t MAX_PACKETS = 64;
   constexpr uint16_t MTU = 1500;
@@ -144,6 +144,8 @@ HOT void Client::processMessageBlocks(const char *buffer, uint16_t blocks_count)
     return handlers;
   }();
 
+  printf("blocks_count: %u\n", blocks_count);
+
   while (blocks_count--)
   {
     const MessageBlock &block = *reinterpret_cast<const MessageBlock *>(buffer);
@@ -157,7 +159,7 @@ HOT void Client::processMessageBlocks(const char *buffer, uint16_t blocks_count)
   }
 }
 
-void Client::handleNewOrder(const MessageBlock &block)
+HOT void Client::handleNewOrder(const MessageBlock &block)
 {
   char buffer[] = "[New Order] Timestamp:            Side:   Price:             Quantity:                      Orderbook Position:           \n";
   constexpr uint16_t buffer_len = sizeof(buffer) - 1;
@@ -182,7 +184,7 @@ void Client::handleNewOrder(const MessageBlock &block)
   logger.log(std::string_view(buffer, buffer_len));
 }
 
-void Client::handleExecutionNotice(const MessageBlock &block)
+HOT void Client::handleExecutionNotice(const MessageBlock &block)
 {
   char buffer[] = "[Execution Notice] Timestamp:            Side:   Quantity:                     \n";
   constexpr uint16_t buffer_len = sizeof(buffer) - 1;
@@ -201,7 +203,7 @@ void Client::handleExecutionNotice(const MessageBlock &block)
   logger.log(std::string_view(buffer, buffer_len));
 }
 
-void Client::handleExecutionNoticeWithTradeInfo(const MessageBlock &block)
+HOT void Client::handleExecutionNoticeWithTradeInfo(const MessageBlock &block)
 {
   char buffer[] = "[Execution Notice With Trade Info] Timestamp:            Side:   Price:             Quantity:                     \n";
   constexpr uint16_t buffer_len = sizeof(buffer) - 1;
@@ -223,7 +225,7 @@ void Client::handleExecutionNoticeWithTradeInfo(const MessageBlock &block)
   logger.log(std::string_view(buffer, buffer_len));
 }
 
-void Client::handleDeletedOrder(const MessageBlock &block)
+HOT void Client::handleDeletedOrder(const MessageBlock &block)
 {
   char buffer[] = "[Deleted Order] Timestamp:            Side:   \n";
   constexpr uint16_t buffer_len = sizeof(buffer) - 1;
