@@ -25,7 +25,7 @@ COLD Client::Client(const std::string_view bind_address_str, const std::string_v
   multicast_address(createAddress(multicast_address_str)),
   bind_address(createAddress(bind_address_str)),
   fd(createUdpSocket()),
-  logger("itch_multicast.log")
+  logger("itch_multicast_")
 {
   error |= (bind(fd, reinterpret_cast<const sockaddr *>(&bind_address), sizeof(bind_address)) == -1);
 
@@ -258,6 +258,8 @@ void Client::handleDeletedOrder(const MessageBlock &block)
 
   logger.log(std::string_view(buffer, buffer_len));
 }
+
+//TODO call rotateFiles when new trading day begins
 
 void Client::handleSeconds(const MessageBlock &block)
 {
