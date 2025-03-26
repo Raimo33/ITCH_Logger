@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-26 15:31:24                                                
+last edited: 2025-03-26 18:45:07                                                
 
 ================================================================================*/
 
@@ -21,9 +21,19 @@ last edited: 2025-03-26 15:31:24
 #include "macros.hpp"
 #include "error.hpp"
 
-COLD Client::Client(const std::string_view bind_address_str, const std::string_view multicast_address_str) :
-  bind_address(createAddress(bind_address_str)),
-  multicast_address(createAddress(multicast_address_str)),
+COLD Client::Client(const std::string_view ip, const uint16_t port) :
+  bind_address{
+    AF_INET,
+    htons(port),
+    { INADDR_ANY },
+    {}
+  },
+  multicast_address{
+    AF_INET,
+    htons(port),
+    { inet_addr(ip.data()) },
+    {}
+  },
   fd(createUdpSocket()),
   logger("itch_multicast")
 {
@@ -41,26 +51,6 @@ COLD Client::Client(const std::string_view bind_address_str, const std::string_v
 COLD Client::~Client(void)
 {
   close(fd);
-}
-
-COLD sockaddr_in Client::createAddress(const std::string_view address_string) const
-{
-  const std::pair<std::string, std::string> address_parts = utils::split(address_string, ':');
-
-  std::string ip = address_parts.first;
-  std::string port = address_parts.second;
-
-  error |= (ip.empty() | port.empty());
-  
-  sockaddr_in address{};
-
-  address.sin_family = AF_INET;
-  address.sin_port = htons(std::stoi(port));
-  error |= (inet_pton(AF_INET, ip.data(), &address.sin_addr) != 1);
-
-  CHECK_ERROR;
-
-  return address;
 }
 
 COLD int Client::createUdpSocket(void) const
@@ -110,12 +100,8 @@ void Client::run(void)
 
   while (true)
   {
-    printf("deb1\n");
-
     int8_t packets_count = recvmmsg(fd, packets, MAX_PACKETS, MSG_WAITFORONE, nullptr);
     error |= (packets_count == -1);
-
-    printf("deb2\n");
 
     const MoldUDP64Header *header_ptr = headers;
     const char *payload_ptr = reinterpret_cast<char *>(payloads);
@@ -140,9 +126,10 @@ HOT void Client::processMessageBlocks(const char *buffer, uint16_t blocks_count)
 {
   using MessageHandler = void (Client::*)(const MessageBlock &);
 
-  alignas(64) constexpr std::array<MessageHandler, 256> handlers = []()
+  constexpr uint8_t size = 'Z' + 1;
+  alignas(64) constexpr std::array<MessageHandler, size> handlers = []()
   {
-    std::array<MessageHandler, 256> handlers{};
+    std::array<MessageHandler, size> handlers{};
     handlers['A'] = &Client::handleNewOrder;
     handlers['D'] = &Client::handleDeletedOrder;
     handlers['T'] = &Client::handleSeconds;
@@ -197,8 +184,6 @@ void Client::handleNewOrder(const MessageBlock &block)
 
 void Client::handleExecutionNotice(const MessageBlock &block)
 {
-  printf("DEB5\n");
-
   char buffer[] = "[Execution Notice] Timestamp:            Side:   Quantity:                     \n";
   constexpr uint16_t buffer_len = sizeof(buffer) - 1;
 
@@ -218,8 +203,6 @@ void Client::handleExecutionNotice(const MessageBlock &block)
 
 void Client::handleExecutionNoticeWithTradeInfo(const MessageBlock &block)
 {
-  printf("DEB6\n");
-
   char buffer[] = "[Execution Notice With Trade Info] Timestamp:            Side:   Price:             Quantity:                     \n";
   constexpr uint16_t buffer_len = sizeof(buffer) - 1;
 
@@ -242,8 +225,6 @@ void Client::handleExecutionNoticeWithTradeInfo(const MessageBlock &block)
 
 void Client::handleDeletedOrder(const MessageBlock &block)
 {
-  printf("DEB7\n");
-
   char buffer[] = "[Deleted Order] Timestamp:            Side:   \n";
   constexpr uint16_t buffer_len = sizeof(buffer) - 1;
 
