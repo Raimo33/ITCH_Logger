@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-17 15:30:41                                                 
-last edited: 2025-03-27 15:01:35                                                
+last edited: 2025-03-27 15:31:31                                                
 
 ================================================================================*/
 
@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 
   init_signal_handler();
 
-  std::vector<std::string_view> args(argv + 1, argv + argc);
+  std::vector<std::string> args(argv + 1, argv + argc);
 
   Client client(args);
   client.run();

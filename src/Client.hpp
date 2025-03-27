@@ -11,7 +11,7 @@ constexpr uint32_t READ_BUFFER_SIZE = 1024 * 1024;
 class Client
 {
   public:
-    Client(const std::vector<std::string_view> addresses);
+    Client(const std::vector<std::string> &addresses);
     ~Client(void);
 
     void run(void);

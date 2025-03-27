@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-27 15:18:14                                                
+last edited: 2025-03-27 15:31:31                                                
 
 ================================================================================*/
 
@@ -41,14 +41,18 @@ COLD Client::~Client(void)
   close(fd);
 }
 
-COLD std::vector<int> createSockets(const std::vector<std::string_view> &addresses)
+COLD std::vector<int> createSockets(const std::vector<std::string> &addresses)
 {
   std::vector<int> sockets;
   sockets.reserve(addresses.size());
 
   for (const auto &address : addresses)
   {
-    std::string ip
+    const auto colon_pos = address.find(':');
+    std::string ip = address.substr(0, colon_pos);
+    std::string port = address.substr(colon_pos + 1);
+
+    
   }
 
   CHECK_ERROR;
