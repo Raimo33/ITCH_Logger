@@ -8,8 +8,8 @@
 struct MoldUDP64Header
 {
   char session[10];
-  uint16_t message_count;
   uint64_t sequence_number;
+  uint16_t message_count;
 };
 
 struct MessageBlock
