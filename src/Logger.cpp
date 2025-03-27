@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 12:48:08                                                 
-last edited: 2025-03-27 16:36:15                                                
+last edited: 2025-03-27 17:38:36                                                
 
 ================================================================================*/
 
@@ -38,7 +38,12 @@ COLD Logger::Logger(const std::string_view filename) :
 
   error |= (io_uring_queue_init(1, &ring, IORING_SETUP_SQPOLL) == -1);
   error |= (io_uring_register_files(&ring, &fd, 1) == -1);
-  iovec iov[2] = {{buffers[0], WRITE_BUFFER_SIZE}, {buffers[1], WRITE_BUFFER_SIZE}};
+
+  iovec iov[2] = {
+    {buffers[0], WRITE_BUFFER_SIZE},
+    {buffers[1], WRITE_BUFFER_SIZE}
+  };
+
   error |= (io_uring_register_buffers(&ring, iov, 2) == -1);
   error |= (madvise(buffers[0], WRITE_BUFFER_SIZE, MADV_SEQUENTIAL) == -1);
   error |= (madvise(buffers[1], WRITE_BUFFER_SIZE, MADV_SEQUENTIAL) == -1);
@@ -86,8 +91,6 @@ HOT void Logger::log(const std::string_view message)
   const char *data = message.data();
   size_t remaining = message.size();
 
-  printf("LOG CALLED: REMAINING: %zu\n", remaining);
-
   while (remaining > 0)
   {
     const size_t to_copy = std::min<size_t>(remaining, end_ptr - write_ptr);
@@ -103,9 +106,14 @@ HOT void Logger::log(const std::string_view message)
 
 HOT void Logger::flush(void)
 {
+  //TODO segfault here
   io_uring_sqe *sqe = io_uring_get_sqe(&ring);
+  error |= (sqe == nullptr);
+  CHECK_ERROR;
+
   io_uring_prep_write_fixed(sqe, fd, buffers[buf_idx], WRITE_BUFFER_SIZE, -1, buf_idx);
   sqe->flags |= IOSQE_ASYNC | IOSQE_FIXED_FILE | IOSQE_IO_LINK | IOSQE_BUFFER_SELECT | IOSQE_CQE_SKIP_SUCCESS;
+  fflush(stdout);
 
   buf_idx ^= 1;
   write_ptr = buffers[buf_idx];

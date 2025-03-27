@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-27 16:36:15                                                
+last edited: 2025-03-27 17:38:36                                                
 
 ================================================================================*/
 
@@ -154,17 +154,14 @@ HOT void Client::processMessageBlocks(const char *buffer, uint16_t blocks_count)
 
     PREFETCH_R(buffer + block_length, 3);
 
-    printf("BEFORE CASTING HANDLERS. MESSAGE TYPE: %c\n", block.type);
     (this->*handlers[block.type])(block);
 
-    buffer += block_length;
+    buffer += block_length + sizeof(block.length);
   }
 }
 
 HOT void Client::handleNewOrder(const MessageBlock &block)
 {
-  printf("new order\n");
-
   char buffer[] = "[New Order] Timestamp:            Side:   Price:             Quantity:                      Orderbook Position:           \n";
   constexpr uint16_t buffer_len = sizeof(buffer) - 1;
 
@@ -190,8 +187,6 @@ HOT void Client::handleNewOrder(const MessageBlock &block)
 
 HOT void Client::handleExecutionNotice(const MessageBlock &block)
 {
-  printf("execution notice\n");
-
   char buffer[] = "[Execution Notice] Timestamp:            Side:   Quantity:                     \n";
   constexpr uint16_t buffer_len = sizeof(buffer) - 1;
 
@@ -211,8 +206,6 @@ HOT void Client::handleExecutionNotice(const MessageBlock &block)
 
 HOT void Client::handleExecutionNoticeWithTradeInfo(const MessageBlock &block)
 {
-  printf("execution notice with trade info\n");
-
   char buffer[] = "[Execution Notice With Trade Info] Timestamp:            Side:   Price:             Quantity:                     \n";
   constexpr uint16_t buffer_len = sizeof(buffer) - 1;
 
@@ -235,8 +228,6 @@ HOT void Client::handleExecutionNoticeWithTradeInfo(const MessageBlock &block)
 
 HOT void Client::handleDeletedOrder(const MessageBlock &block)
 {
-  printf("deleted order\n");
-
   char buffer[] = "[Deleted Order] Timestamp:            Side:   \n";
   constexpr uint16_t buffer_len = sizeof(buffer) - 1;
 
@@ -253,40 +244,30 @@ HOT void Client::handleDeletedOrder(const MessageBlock &block)
 
 void Client::handleSeconds(const MessageBlock &block)
 {
-  printf("seconds\n");
-
   (void)block;
   return;
 }
 
 void Client::handleSeriesInfoBasic(const MessageBlock &block)
 {
-  printf("series info basic\n");
-
   (void)block;
   return;
 }
 
 void Client::handleSeriesInfoBasicCombination(const MessageBlock &block)
 {
-  printf("series info basic combination\n");
-
   (void)block;
   return;
 }
 
 void Client::handleTickSizeData(const MessageBlock &block)
 {
-  printf("tick size data\n");
-
   (void)block;
   return;
 }
 
 void Client::handleSystemEvent(const MessageBlock &block)
 {
-  printf("system event\n");
-
   switch (block.system_event_data.event_code)
   {
     case 'O':
@@ -299,16 +280,12 @@ void Client::handleSystemEvent(const MessageBlock &block)
 
 void Client::handleTradingStatus(const MessageBlock &block)
 {
-  printf("trading status\n");
-
   (void)block;
   return;
 }
 
 void Client::handleEquilibriumPrice(const MessageBlock &block)
 {
-  printf("equilibrium price\n");
-
   (void)block;
   return;
 }
