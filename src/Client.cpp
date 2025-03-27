@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-27 15:01:35                                                
+last edited: 2025-03-27 15:18:14                                                
 
 ================================================================================*/
 
@@ -99,8 +99,6 @@ COLD void Client::run(void)
     iov[i][1] = { payloads[i], sizeof(payloads[i]) };
 
     msghdr &msg_hdr = packets[i].msg_hdr;
-    msg_hdr.msg_name = (void*)&multicast_address;
-    msg_hdr.msg_namelen = sizeof(multicast_address);
     msg_hdr.msg_iov = iov[i];
     msg_hdr.msg_iovlen = 2;
   }
@@ -109,6 +107,7 @@ COLD void Client::run(void)
   {
     int8_t packets_count = recvmmsg(fd, packets, MAX_PACKETS, MSG_WAITFORONE, nullptr);
     error |= (packets_count == -1);
+    CHECK_ERROR;
 
     const MoldUDP64Header *header_ptr = headers;
     const char *payload_ptr = reinterpret_cast<char *>(payloads);
