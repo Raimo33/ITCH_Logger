@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 12:48:08                                                 
-last edited: 2025-03-27 17:38:36                                                
+last edited: 2025-03-27 18:59:25                                                
 
 ================================================================================*/
 
@@ -112,13 +112,13 @@ HOT void Logger::flush(void)
   CHECK_ERROR;
 
   io_uring_prep_write_fixed(sqe, fd, buffers[buf_idx], WRITE_BUFFER_SIZE, -1, buf_idx);
-  sqe->flags |= IOSQE_ASYNC | IOSQE_FIXED_FILE | IOSQE_IO_LINK | IOSQE_BUFFER_SELECT | IOSQE_CQE_SKIP_SUCCESS;
-  fflush(stdout);
+  sqe->flags |= IOSQE_FIXED_FILE | IOSQE_CQE_SKIP_SUCCESS;
+
+  error |= (io_uring_submit(&ring) == -1);
 
   buf_idx ^= 1;
   write_ptr = buffers[buf_idx];
   end_ptr = write_ptr + WRITE_BUFFER_SIZE;
 
-  error |= (UNLIKELY(fallocate(fd, 0, lseek(fd, 0, SEEK_END), WRITE_BUFFER_SIZE) == -1));
   CHECK_ERROR;
 }
