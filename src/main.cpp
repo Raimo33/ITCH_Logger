@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-17 15:30:41                                                 
-last edited: 2025-03-26 18:45:07                                                
+last edited: 2025-03-27 15:01:35                                                
 
 ================================================================================*/
 
@@ -20,15 +20,14 @@ void init_signal_handler(void);
 
 int main(int argc, char **argv)
 {
-  if (argc != 3)
-  {
-    std::cerr << "Usage: " << argv[0] << " <ip> <port>\n";
-    return 1;
-  }
+  if (argc < 3)
+   return 1;
 
   init_signal_handler();
 
-  Client client(argv[1], std::stoi(argv[2]));
+  std::vector<std::string_view> args(argv + 1, argv + argc);
+
+  Client client(args);
   client.run();
 }
 

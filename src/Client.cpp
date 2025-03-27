@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-27 14:57:48                                                
+last edited: 2025-03-27 15:01:35                                                
 
 ================================================================================*/
 
@@ -21,20 +21,8 @@ last edited: 2025-03-27 14:57:48
 #include "macros.hpp"
 #include "error.hpp"
 
-COLD Client::Client(const std::string_view ip, const uint16_t port) :
-  bind_address{
-    AF_INET,
-    htons(port),
-    { INADDR_ANY },
-    {}
-  },
-  multicast_address{
-    AF_INET,
-    htons(port),
-    { inet_addr(ip.data()) },
-    {}
-  },
-  fd(createUdpSocket()),
+COLD Client::Client(const std::vector<std::string_view> addresses) :
+  sockets(createSockets(addresses)),
   logger("itch_multicast")
 {
   error |= (bind(fd, reinterpret_cast<const sockaddr *>(&bind_address), sizeof(bind_address)) == -1);
@@ -51,6 +39,21 @@ COLD Client::Client(const std::string_view ip, const uint16_t port) :
 COLD Client::~Client(void)
 {
   close(fd);
+}
+
+COLD std::vector<int> createSockets(const std::vector<std::string_view> &addresses)
+{
+  std::vector<int> sockets;
+  sockets.reserve(addresses.size());
+
+  for (const auto &address : addresses)
+  {
+    std::string ip
+  }
+
+  CHECK_ERROR;
+
+  return sockets;
 }
 
 COLD int Client::createUdpSocket(void) const
@@ -150,7 +153,7 @@ HOT void Client::processMessageBlocks(const char *buffer, uint16_t blocks_count)
     return handlers;
   }();
 
-  printf("blocks_count: %u\n", blocks_count);
+  printf("time: %lu, n_blocks: %d\n", time(nullptr), blocks_count);
 
   while (blocks_count--)
   {

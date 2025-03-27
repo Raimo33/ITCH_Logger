@@ -11,7 +11,7 @@ constexpr uint32_t READ_BUFFER_SIZE = 1024 * 1024;
 class Client
 {
   public:
-    Client(const std::string_view ip, const uint16_t port);
+    Client(const std::vector<std::string_view> addresses);
     ~Client(void);
 
     void run(void);
@@ -36,6 +36,6 @@ class Client
 
     const sockaddr_in bind_address;
     const sockaddr_in multicast_address;
-    const int fd;
+    const std::vector<int> sockets;
     Logger logger;
 };
