@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-27 14:55:45                                                
+last edited: 2025-03-27 14:57:48                                                
 
 ================================================================================*/
 
@@ -109,6 +109,8 @@ COLD void Client::run(void)
 
     const MoldUDP64Header *header_ptr = headers;
     const char *payload_ptr = reinterpret_cast<char *>(payloads);
+
+    printf("time: %lu, packets_count: %d\n", time(nullptr), packets_count);
 
     while (packets_count--)
     {
