@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-28 13:37:05                                                
+last edited: 2025-03-28 13:38:21                                                
 
 ================================================================================*/
 
@@ -15,8 +15,6 @@ last edited: 2025-03-28 13:37:05
 #include <cstring>
 #include <sstream>
 #include <byteswap.h>
-#include <iomanip>
-
 
 #include "Client.hpp"
 #include "utils.hpp"
