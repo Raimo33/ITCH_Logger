@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-28 16:23:06                                                
+last edited: 2025-03-28 16:32:55                                                
 
 ================================================================================*/
 
@@ -202,7 +202,7 @@ HOT void Client::processMessageBlocks(const char *buffer, uint16_t blocks_count)
     const MessageBlock &block = *reinterpret_cast<const MessageBlock *>(buffer);
     const uint16_t block_length = bswap_16(block.length);
 
-    PREFETCH_R(buffer + block_length, 3);
+    PREFETCH_R(buffer + block_length + sizeof(block.length), 3);
 
     (this->*handlers[block.type])(block);
 
