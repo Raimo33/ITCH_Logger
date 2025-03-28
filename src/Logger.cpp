@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 12:48:08                                                 
-last edited: 2025-03-26 20:26:53                                                
+last edited: 2025-03-28 15:02:52                                                
 
 ================================================================================*/
 
@@ -20,7 +20,6 @@ last edited: 2025-03-26 20:26:53
 #include <format>
 
 #include "Logger.hpp"
-#include "utils.hpp"
 #include "error.hpp"
 
 COLD Logger::Logger(const std::string_view filename) :
@@ -86,8 +85,6 @@ HOT void Logger::log(const std::string_view message)
   const char *data = message.data();
   size_t remaining = message.size();
 
-  printf("remaining: %zu\n", remaining);
-
   while (remaining > 0)
   {
     const size_t to_copy = std::min<size_t>(remaining, end_ptr - write_ptr);
@@ -104,13 +101,16 @@ HOT void Logger::log(const std::string_view message)
 HOT void Logger::flush(void)
 {
   io_uring_sqe *sqe = io_uring_get_sqe(&ring);
+  error |= (sqe == nullptr);
+
   io_uring_prep_write_fixed(sqe, fd, buffers[buf_idx], WRITE_BUFFER_SIZE, -1, buf_idx);
   sqe->flags |= IOSQE_ASYNC | IOSQE_FIXED_FILE | IOSQE_IO_LINK | IOSQE_BUFFER_SELECT | IOSQE_CQE_SKIP_SUCCESS;
+
+  error |= (io_uring_submit(&ring) == -1);
 
   buf_idx ^= 1;
   write_ptr = buffers[buf_idx];
   end_ptr = write_ptr + WRITE_BUFFER_SIZE;
 
-  error |= (UNLIKELY(fallocate(fd, 0, lseek(fd, 0, SEEK_END), WRITE_BUFFER_SIZE) == -1));
   CHECK_ERROR;
 }
