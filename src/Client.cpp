@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-27 15:31:31                                                
+last edited: 2025-03-28 14:58:09                                                
 
 ================================================================================*/
 
@@ -13,35 +13,28 @@ last edited: 2025-03-27 15:31:31
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <cstring>
-#include <sstream>
+#include <vector>
+#include <array>
+#include <sys/epoll.h>
 #include <byteswap.h>
 
 #include "Client.hpp"
-#include "utils.hpp"
 #include "macros.hpp"
 #include "error.hpp"
 
-COLD Client::Client(const std::vector<std::string_view> addresses) :
+COLD Client::Client(const std::vector<std::string> &addresses) :
   sockets(createSockets(addresses)),
-  logger("itch_multicast")
-{
-  error |= (bind(fd, reinterpret_cast<const sockaddr *>(&bind_address), sizeof(bind_address)) == -1);
-
-  ip_mreq mreq{};
-  mreq.imr_interface.s_addr = bind_address.sin_addr.s_addr;
-  mreq.imr_multiaddr.s_addr = multicast_address.sin_addr.s_addr;
-
-  error |= (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1);
-
-  CHECK_ERROR;
-}
+  epoll_fd(createEpollFd()),
+  logger("itch_multicast") {}
 
 COLD Client::~Client(void)
 {
-  close(fd);
+  for (const auto &socket : sockets)
+    close(socket);
+  close(epoll_fd);
 }
 
-COLD std::vector<int> createSockets(const std::vector<std::string> &addresses)
+COLD std::vector<int> Client::createSockets(const std::vector<std::string> &addresses) const
 {
   std::vector<int> sockets;
   sockets.reserve(addresses.size());
@@ -52,12 +45,49 @@ COLD std::vector<int> createSockets(const std::vector<std::string> &addresses)
     std::string ip = address.substr(0, colon_pos);
     std::string port = address.substr(colon_pos + 1);
 
-    
+    sockaddr_in bind_address{};
+    bind_address.sin_family = AF_INET;
+    bind_address.sin_port = htons(std::stoi(port));
+    bind_address.sin_addr.s_addr = INADDR_ANY;
+
+    sockaddr_in multicast_address{};
+    multicast_address.sin_family = AF_INET;
+    multicast_address.sin_port = htons(std::stoi(port));
+    multicast_address.sin_addr.s_addr = inet_addr(ip.data());
+
+    ip_mreq mreq{};
+    mreq.imr_interface.s_addr = bind_address.sin_addr.s_addr;
+    mreq.imr_multiaddr.s_addr = multicast_address.sin_addr.s_addr;
+
+    const int sock_fd = createUdpSocket();
+    error |= (bind(sock_fd, reinterpret_cast<const sockaddr *>(&bind_address), sizeof(bind_address)) == -1);
+    error |= (setsockopt(sock_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1);
+
+    sockets.push_back(sock_fd);
   }
 
   CHECK_ERROR;
 
   return sockets;
+}
+
+COLD int Client::createEpollFd(void) const
+{
+  int epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+  error |= (epoll_fd == -1);
+
+  for (const auto &socket : sockets)
+  {
+    epoll_event event{};
+    event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLET;
+    event.data.fd = socket;
+
+    error |= (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, socket, &event) == -1);
+  }
+
+  CHECK_ERROR;
+
+  return epoll_fd;
 }
 
 COLD int Client::createUdpSocket(void) const
@@ -71,6 +101,7 @@ COLD int Client::createUdpSocket(void) const
   constexpr int disable = 0;
   //constexpr int priority = 255;
 
+  //TODO add
   // error |= (setsockopt(sock_fd, SOL_SOCKET, SO_PRIORITY, &priority, sizeof(enable)) == -1);
   // error |= (setsockopt(sock_fd, SOL_SOCKET, SO_ZEROCOPY, &enable, sizeof(enable)) == -1);
   error |= (setsockopt(sock_fd, IPPROTO_IP, IP_MULTICAST_LOOP, &disable, sizeof(disable)) == -1);
@@ -107,28 +138,38 @@ COLD void Client::run(void)
     msg_hdr.msg_iovlen = 2;
   }
 
+  std::vector<epoll_event> events(sockets.size());
+
   while (true)
   {
-    int8_t packets_count = recvmmsg(fd, packets, MAX_PACKETS, MSG_WAITFORONE, nullptr);
-    error |= (packets_count == -1);
-    CHECK_ERROR;
+    int8_t n = epoll_wait(epoll_fd, events.data(), events.size(), -1);
+    error |= (n == -1);
 
-    const MoldUDP64Header *header_ptr = headers;
-    const char *payload_ptr = reinterpret_cast<char *>(payloads);
-
-    printf("time: %lu, packets_count: %d\n", time(nullptr), packets_count);
-
-    while (packets_count--)
+    while (n--)
     {
-      PREFETCH_R(header_ptr + 1, 2);
-      PREFETCH_R(payload_ptr + MAX_MSG_SIZE, 2);
+      const epoll_event &event = events[n];
+      const int fd = event.data.fd;
+      error |= (event.events & (EPOLLERR | EPOLLHUP));
 
-      const uint16_t message_count = bswap_16(header_ptr->message_count);
-      processMessageBlocks(payload_ptr, message_count);
+      int8_t packets_count = recvmmsg(fd, packets, MAX_PACKETS, MSG_WAITFORONE, nullptr);
+      error |= (packets_count == -1);
 
-      header_ptr++;
-      payload_ptr += MAX_MSG_SIZE;
+      const MoldUDP64Header *header_ptr = headers;
+      const char *payload_ptr = reinterpret_cast<char *>(payloads);
+
+      while (packets_count--)
+      {
+        PREFETCH_R(header_ptr + 1, 2);
+        PREFETCH_R(payload_ptr + MAX_MSG_SIZE, 2);
+
+        const uint16_t message_count = bswap_16(header_ptr->message_count);
+        processMessageBlocks(payload_ptr, message_count);
+
+        header_ptr++;
+        payload_ptr += MAX_MSG_SIZE;
+      }
     }
+    CHECK_ERROR;
   }
 
   UNREACHABLE;
@@ -156,8 +197,6 @@ HOT void Client::processMessageBlocks(const char *buffer, uint16_t blocks_count)
     return handlers;
   }();
 
-  printf("time: %lu, n_blocks: %d\n", time(nullptr), blocks_count);
-
   while (blocks_count--)
   {
     const MessageBlock &block = *reinterpret_cast<const MessageBlock *>(buffer);
@@ -173,84 +212,57 @@ HOT void Client::processMessageBlocks(const char *buffer, uint16_t blocks_count)
 
 HOT void Client::handleNewOrder(const MessageBlock &block)
 {
-  char buffer[] = "[New Order] Timestamp:            Side:   Price:             Quantity:                      Orderbook Position:           \n";
-  constexpr uint16_t buffer_len = sizeof(buffer) - 1;
-
-  constexpr uint16_t timestamp_offset = strlen("[New Order] Timestamp: ");
-  constexpr uint16_t side_offset = timestamp_offset + strlen("           Side: ");
-  constexpr uint16_t price_offset = side_offset + strlen("  Price: ");
-  constexpr uint16_t quantity_offset = price_offset + strlen("             Quantity: ");
-  constexpr uint16_t orderbook_position_offset = quantity_offset + strlen("                  Orderbook Position: ");
-
   const uint32_t timestamp = bswap_32(block.new_order.timestamp_nanoseconds);
   const int32_t  price = bswap_32(block.new_order.price);
   const uint64_t quantity = bswap_64(block.new_order.quantity);
   const uint32_t orderbook_position = bswap_32(block.new_order.orderbook_position);
 
-  utils::ultoa(timestamp, buffer + timestamp_offset);
-  buffer[side_offset] = block.new_order.side;
-  utils::ultoa(price, buffer + price_offset);
-  utils::ultoa(quantity, buffer + quantity_offset);
-  utils::ultoa(orderbook_position, buffer + orderbook_position_offset);
+  thread_local std::array<char, 256> buffer;
+  const auto result = std::format_to_n(buffer.data(), buffer.size(),
+    "{:<15}, Timestamp: {:>10}, Side: {}, Price: {:>10}, Quantity: {:>20}, Orderbook Position: {:>10}\n",
+    "NEW_ORDER", timestamp, block.new_order.side, price, quantity, orderbook_position);
 
-  logger.log(std::string_view(buffer, buffer_len));
+  logger.log(std::string_view(buffer.data(), result.size));
 }
 
 HOT void Client::handleExecutionNotice(const MessageBlock &block)
 {
-  char buffer[] = "[Execution Notice] Timestamp:            Side:   Quantity:                     \n";
-  constexpr uint16_t buffer_len = sizeof(buffer) - 1;
-
-  constexpr uint16_t timestamp_offset = strlen("[Execution Notice] Timestamp: ");
-  constexpr uint16_t side_offset = timestamp_offset + strlen("           Side: ");
-  constexpr uint16_t quantity_offset = side_offset + strlen("  Quantity: ");
-
   const uint32_t timestamp = bswap_32(block.execution_notice.timestamp_nanoseconds);
+  const uint32_t price = INT32_MAX;
   const uint64_t quantity = bswap_64(block.execution_notice.executed_quantity);
 
-  utils::ultoa(timestamp, buffer + timestamp_offset);
-  buffer[side_offset] = block.execution_notice.side;
-  utils::ultoa(quantity, buffer + quantity_offset);
-
-  logger.log(std::string_view(buffer, buffer_len));
+  thread_local std::array<char, 256> buffer;
+  const auto result = std::format_to_n(buffer.data(), buffer.size(),
+    "{:<15}, Timestamp: {:>10}, Side: {}, Price: {:>10}, Quantity: {:>20}\n",
+    "EXECUTION_NOTICE", timestamp, block.execution_notice.side, price, quantity);
+  
+  logger.log(std::string_view(buffer.data(), result.size)); 
 }
 
 HOT void Client::handleExecutionNoticeWithTradeInfo(const MessageBlock &block)
 {
-  char buffer[] = "[Execution Notice With Trade Info] Timestamp:            Side:   Price:             Quantity:                     \n";
-  constexpr uint16_t buffer_len = sizeof(buffer) - 1;
-
-  constexpr uint16_t timestamp_offset = strlen("[Execution Notice With Trade Info] Timestamp: ");
-  constexpr uint16_t side_offset = timestamp_offset + strlen("           Side: ");
-  constexpr uint16_t price_offset = side_offset + strlen("  Price: ");
-  constexpr uint16_t quantity_offset = price_offset + strlen("             Quantity: ");
-
   const uint32_t timestamp = bswap_32(block.execution_notice_with_trade_info.timestamp_nanoseconds);
   const int32_t  price = bswap_32(block.execution_notice_with_trade_info.trade_price);
   const uint64_t quantity = bswap_64(block.execution_notice_with_trade_info.executed_quantity);
 
-  utils::ultoa(timestamp, buffer + timestamp_offset);
-  buffer[side_offset] = block.execution_notice_with_trade_info.side;
-  utils::ultoa(price, buffer + price_offset);
-  utils::ultoa(quantity, buffer + quantity_offset);
+  thread_local std::array<char, 256> buffer;
+  const auto result = std::format_to_n(buffer.data(), buffer.size(),
+    "{:<15}, Timestamp: {:>10}, Side: {}, Price: {:>10}, Quantity: {:>20}\n",
+    "EXECUTION_NOTICE_WITH_TRADE_INFO", timestamp, block.execution_notice_with_trade_info.side, price, quantity);
 
-  logger.log(std::string_view(buffer, buffer_len));
+  logger.log(std::string_view(buffer.data(), result.size));
 }
 
 HOT void Client::handleDeletedOrder(const MessageBlock &block)
 {
-  char buffer[] = "[Deleted Order] Timestamp:            Side:   \n";
-  constexpr uint16_t buffer_len = sizeof(buffer) - 1;
-
-  constexpr uint16_t timestamp_offset = strlen("[Deleted Order] Timestamp: ");
-  constexpr uint16_t side_offset = timestamp_offset + strlen("           Side: ");
-
   const uint32_t timestamp = bswap_32(block.deleted_order.timestamp_nanoseconds);
 
-  utils::ultoa(timestamp, buffer + timestamp_offset);
-  buffer[side_offset] = block.deleted_order.side;
+  thread_local std::array<char, 256> buffer;
+  const auto result = std::format_to_n(buffer.data(), buffer.size(),
+    "{:<15}, Timestamp: {:>10}, Side: {}\n",
+    "DELETED_ORDER", timestamp, block.deleted_order.side);
 
-  logger.log(std::string_view(buffer, buffer_len));
+  logger.log(std::string_view(buffer.data(), result.size));
 }
 
 void Client::handleSeconds(const MessageBlock &block)

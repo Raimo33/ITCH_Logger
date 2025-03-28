@@ -18,6 +18,8 @@ class Client
 
   private:
 
+    std::vector<int> createSockets(const std::vector<std::string> &addresses) const;
+    int createEpollFd(void) const;
     int createUdpSocket(void) const;
 
     void processMessageBlocks(const char *buffer, uint16_t blocks_count);
@@ -34,8 +36,7 @@ class Client
     void handleTradingStatus(const MessageBlock &block);
     void handleEquilibriumPrice(const MessageBlock &block);
 
-    const sockaddr_in bind_address;
-    const sockaddr_in multicast_address;
     const std::vector<int> sockets;
+    const int epoll_fd;
     Logger logger;
 };
