@@ -1,4 +1,4 @@
-TARGET := ITCH_Logger
+TARGET := ITCH_Logger_multi
 
 SRCS := $(addprefix src/, main.cpp Client.cpp Logger.cpp error.cpp)
 OBJS := $(SRCS:.cpp=.o)
