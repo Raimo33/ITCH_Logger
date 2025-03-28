@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-27 17:38:36                                                
+last edited: 2025-03-28 13:37:05                                                
 
 ================================================================================*/
 
@@ -15,6 +15,8 @@ last edited: 2025-03-27 17:38:36
 #include <cstring>
 #include <sstream>
 #include <byteswap.h>
+#include <iomanip>
+
 
 #include "Client.hpp"
 #include "utils.hpp"
@@ -162,84 +164,57 @@ HOT void Client::processMessageBlocks(const char *buffer, uint16_t blocks_count)
 
 HOT void Client::handleNewOrder(const MessageBlock &block)
 {
-  char buffer[] = "[New Order] Timestamp:            Side:   Price:             Quantity:                      Orderbook Position:           \n";
-  constexpr uint16_t buffer_len = sizeof(buffer) - 1;
-
-  constexpr uint16_t timestamp_offset = strlen("[New Order] Timestamp: ");
-  constexpr uint16_t side_offset = timestamp_offset + strlen("           Side: ");
-  constexpr uint16_t price_offset = side_offset + strlen("  Price: ");
-  constexpr uint16_t quantity_offset = price_offset + strlen("             Quantity: ");
-  constexpr uint16_t orderbook_position_offset = quantity_offset + strlen("                  Orderbook Position: ");
-
   const uint32_t timestamp = bswap_32(block.new_order.timestamp_nanoseconds);
   const int32_t  price = bswap_32(block.new_order.price);
   const uint64_t quantity = bswap_64(block.new_order.quantity);
   const uint32_t orderbook_position = bswap_32(block.new_order.orderbook_position);
 
-  utils::ultoa(timestamp, buffer + timestamp_offset);
-  buffer[side_offset] = block.new_order.side;
-  utils::ultoa(price, buffer + price_offset);
-  utils::ultoa(quantity, buffer + quantity_offset);
-  utils::ultoa(orderbook_position, buffer + orderbook_position_offset);
+  char buffer[256];  
+  const uint8_t len = snprintf(buffer, sizeof(buffer),
+      "%-15s, Timestamp: %10u, Side: %c, Price: %10d, Quantity: %20lu, Orderbook Position: %10u\n",
+      "NEW_ORDER", timestamp, block.new_order.side, price, quantity, orderbook_position);
 
-  logger.log(std::string_view(buffer, buffer_len));
+  logger.log(std::string_view(buffer, len));
 }
 
 HOT void Client::handleExecutionNotice(const MessageBlock &block)
 {
-  char buffer[] = "[Execution Notice] Timestamp:            Side:   Quantity:                     \n";
-  constexpr uint16_t buffer_len = sizeof(buffer) - 1;
-
-  constexpr uint16_t timestamp_offset = strlen("[Execution Notice] Timestamp: ");
-  constexpr uint16_t side_offset = timestamp_offset + strlen("           Side: ");
-  constexpr uint16_t quantity_offset = side_offset + strlen("  Quantity: ");
-
   const uint32_t timestamp = bswap_32(block.execution_notice.timestamp_nanoseconds);
+  const uint32_t price = INT32_MAX;
   const uint64_t quantity = bswap_64(block.execution_notice.executed_quantity);
 
-  utils::ultoa(timestamp, buffer + timestamp_offset);
-  buffer[side_offset] = block.execution_notice.side;
-  utils::ultoa(quantity, buffer + quantity_offset);
+  char buffer[256];
+  const uint8_t len = snprintf(buffer, sizeof(buffer),
+      "%-15s, Timestamp: %10u, Side: %c, Price: %10u, Quantity: %20lu\n",
+      "EXECUTION_NOTICE", timestamp, block.execution_notice.side, price, quantity);
 
-  logger.log(std::string_view(buffer, buffer_len));
+  logger.log(std::string_view(buffer, len));
 }
 
 HOT void Client::handleExecutionNoticeWithTradeInfo(const MessageBlock &block)
 {
-  char buffer[] = "[Execution Notice With Trade Info] Timestamp:            Side:   Price:             Quantity:                     \n";
-  constexpr uint16_t buffer_len = sizeof(buffer) - 1;
-
-  constexpr uint16_t timestamp_offset = strlen("[Execution Notice With Trade Info] Timestamp: ");
-  constexpr uint16_t side_offset = timestamp_offset + strlen("           Side: ");
-  constexpr uint16_t price_offset = side_offset + strlen("  Price: ");
-  constexpr uint16_t quantity_offset = price_offset + strlen("             Quantity: ");
-
   const uint32_t timestamp = bswap_32(block.execution_notice_with_trade_info.timestamp_nanoseconds);
   const int32_t  price = bswap_32(block.execution_notice_with_trade_info.trade_price);
   const uint64_t quantity = bswap_64(block.execution_notice_with_trade_info.executed_quantity);
 
-  utils::ultoa(timestamp, buffer + timestamp_offset);
-  buffer[side_offset] = block.execution_notice_with_trade_info.side;
-  utils::ultoa(price, buffer + price_offset);
-  utils::ultoa(quantity, buffer + quantity_offset);
+  char buffer[256];
+  const uint8_t len = snprintf(buffer, sizeof(buffer),
+      "%-15s, Timestamp: %10u, Side: %c, Price: %10d, Quantity: %20lu\n",
+      "EXECUTION_NOTICE_WITH_TRADE_INFO", timestamp, block.execution_notice_with_trade_info.side, price, quantity);
 
-  logger.log(std::string_view(buffer, buffer_len));
+  logger.log(std::string_view(buffer, len));
 }
 
 HOT void Client::handleDeletedOrder(const MessageBlock &block)
 {
-  char buffer[] = "[Deleted Order] Timestamp:            Side:   \n";
-  constexpr uint16_t buffer_len = sizeof(buffer) - 1;
-
-  constexpr uint16_t timestamp_offset = strlen("[Deleted Order] Timestamp: ");
-  constexpr uint16_t side_offset = timestamp_offset + strlen("           Side: ");
-
   const uint32_t timestamp = bswap_32(block.deleted_order.timestamp_nanoseconds);
 
-  utils::ultoa(timestamp, buffer + timestamp_offset);
-  buffer[side_offset] = block.deleted_order.side;
+  char buffer[256];
+  const uint8_t len = snprintf(buffer, sizeof(buffer),
+      "%-15s, Timestamp: %10u, Side: %c\n",
+      "DELETED_ORDER", timestamp, block.deleted_order.side);
 
-  logger.log(std::string_view(buffer, buffer_len));
+  logger.log(std::string_view(buffer, len));
 }
 
 void Client::handleSeconds(const MessageBlock &block)
