@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-28 16:39:36                                                
+last edited: 2025-03-28 22:24:25                                                
 
 ================================================================================*/
 
@@ -14,7 +14,7 @@ last edited: 2025-03-28 16:39:36
 #include <unistd.h>
 #include <cstring>
 #include <format>
-#include <byteswap.h>
+#include <endian.h>
 
 #include "Client.hpp"
 #include "macros.hpp"
@@ -112,7 +112,7 @@ COLD void Client::run(void)
       PREFETCH_R(header_ptr + 1, 2);
       PREFETCH_R(payload_ptr + MAX_MSG_SIZE, 2);
 
-      const uint16_t message_count = bswap_16(header_ptr->message_count);
+      const uint16_t message_count = be16toh(header_ptr->message_count);
       processMessageBlocks(payload_ptr, message_count);
 
       header_ptr++;
@@ -149,7 +149,7 @@ HOT void Client::processMessageBlocks(const char *buffer, uint16_t blocks_count)
   while (blocks_count--)
   {
     const MessageBlock &block = *reinterpret_cast<const MessageBlock *>(buffer);
-    const uint16_t block_length = bswap_16(block.length);
+    const uint16_t block_length = be16toh(block.length);
 
     PREFETCH_R(buffer + block_length + sizeof(block.length), 3);
 
@@ -161,10 +161,10 @@ HOT void Client::processMessageBlocks(const char *buffer, uint16_t blocks_count)
 
 HOT void Client::handleNewOrder(const MessageBlock &block)
 {
-  const uint32_t timestamp = bswap_32(block.new_order.timestamp_nanoseconds);
-  const int32_t  price = bswap_32(block.new_order.price);
-  const uint64_t quantity = bswap_64(block.new_order.quantity);
-  const uint32_t orderbook_position = bswap_32(block.new_order.orderbook_position);
+  const uint32_t timestamp = be32toh(block.new_order.timestamp_nanoseconds);
+  const int32_t  price = be32toh(block.new_order.price);
+  const uint64_t quantity = be64toh(block.new_order.quantity);
+  const uint32_t orderbook_position = be32toh(block.new_order.orderbook_position);
 
   thread_local std::array<char, 256> buffer;
   const auto result = std::format_to_n(buffer.data(), buffer.size(),
@@ -176,9 +176,9 @@ HOT void Client::handleNewOrder(const MessageBlock &block)
 
 HOT void Client::handleExecutionNotice(const MessageBlock &block)
 {
-  const uint32_t timestamp = bswap_32(block.execution_notice.timestamp_nanoseconds);
+  const uint32_t timestamp = be32toh(block.execution_notice.timestamp_nanoseconds);
   const uint32_t price = INT32_MAX;
-  const uint64_t quantity = bswap_64(block.execution_notice.executed_quantity);
+  const uint64_t quantity = be64toh(block.execution_notice.executed_quantity);
 
   thread_local std::array<char, 256> buffer;
   const auto result = std::format_to_n(buffer.data(), buffer.size(),
@@ -190,9 +190,9 @@ HOT void Client::handleExecutionNotice(const MessageBlock &block)
 
 HOT void Client::handleExecutionNoticeWithTradeInfo(const MessageBlock &block)
 {
-  const uint32_t timestamp = bswap_32(block.execution_notice_with_trade_info.timestamp_nanoseconds);
-  const int32_t  price = bswap_32(block.execution_notice_with_trade_info.trade_price);
-  const uint64_t quantity = bswap_64(block.execution_notice_with_trade_info.executed_quantity);
+  const uint32_t timestamp = be32toh(block.execution_notice_with_trade_info.timestamp_nanoseconds);
+  const int32_t  price = be32toh(block.execution_notice_with_trade_info.trade_price);
+  const uint64_t quantity = be64toh(block.execution_notice_with_trade_info.executed_quantity);
 
   thread_local std::array<char, 256> buffer;
   const auto result = std::format_to_n(buffer.data(), buffer.size(),
@@ -204,7 +204,7 @@ HOT void Client::handleExecutionNoticeWithTradeInfo(const MessageBlock &block)
 
 HOT void Client::handleDeletedOrder(const MessageBlock &block)
 {
-  const uint32_t timestamp = bswap_32(block.deleted_order.timestamp_nanoseconds);
+  const uint32_t timestamp = be32toh(block.deleted_order.timestamp_nanoseconds);
 
   thread_local std::array<char, 256> buffer;
   const auto result = std::format_to_n(buffer.data(), buffer.size(),
