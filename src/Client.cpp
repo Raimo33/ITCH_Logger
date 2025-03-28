@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-28 13:38:21                                                
+last edited: 2025-03-28 14:17:32                                                
 
 ================================================================================*/
 
@@ -17,7 +17,6 @@ last edited: 2025-03-28 13:38:21
 #include <byteswap.h>
 
 #include "Client.hpp"
-#include "utils.hpp"
 #include "macros.hpp"
 #include "error.hpp"
 
@@ -167,12 +166,12 @@ HOT void Client::handleNewOrder(const MessageBlock &block)
   const uint64_t quantity = bswap_64(block.new_order.quantity);
   const uint32_t orderbook_position = bswap_32(block.new_order.orderbook_position);
 
-  char buffer[256];  
-  const uint8_t len = snprintf(buffer, sizeof(buffer),
-      "%-15s, Timestamp: %10u, Side: %c, Price: %10d, Quantity: %20lu, Orderbook Position: %10u\n",
-      "NEW_ORDER", timestamp, block.new_order.side, price, quantity, orderbook_position);
+  thread_local std::array<char, 256> buffer;
+  const auto result = std::format_to_n(buffer.data(), buffer.size(),
+    "{:<15}, Timestamp: {:>10}, Side: {}, Price: {:>10}, Quantity: {:>20}, Orderbook Position: {:>10}\n",
+    "NEW_ORDER", timestamp, block.new_order.side, price, quantity, orderbook_position);
 
-  logger.log(std::string_view(buffer, len));
+  logger.log(std::string_view(buffer.data(), result.size));
 }
 
 HOT void Client::handleExecutionNotice(const MessageBlock &block)
@@ -181,12 +180,12 @@ HOT void Client::handleExecutionNotice(const MessageBlock &block)
   const uint32_t price = INT32_MAX;
   const uint64_t quantity = bswap_64(block.execution_notice.executed_quantity);
 
-  char buffer[256];
-  const uint8_t len = snprintf(buffer, sizeof(buffer),
-      "%-15s, Timestamp: %10u, Side: %c, Price: %10u, Quantity: %20lu\n",
-      "EXECUTION_NOTICE", timestamp, block.execution_notice.side, price, quantity);
-
-  logger.log(std::string_view(buffer, len));
+  thread_local std::array<char, 256> buffer;
+  const auto result = std::format_to_n(buffer.data(), buffer.size(),
+    "{:<15}, Timestamp: {:>10}, Side: {}, Price: {:>10}, Quantity: {:>20}\n",
+    "EXECUTION_NOTICE", timestamp, block.execution_notice.side, price, quantity);
+  
+  logger.log(std::string_view(buffer.data(), result.size)); 
 }
 
 HOT void Client::handleExecutionNoticeWithTradeInfo(const MessageBlock &block)
@@ -195,24 +194,24 @@ HOT void Client::handleExecutionNoticeWithTradeInfo(const MessageBlock &block)
   const int32_t  price = bswap_32(block.execution_notice_with_trade_info.trade_price);
   const uint64_t quantity = bswap_64(block.execution_notice_with_trade_info.executed_quantity);
 
-  char buffer[256];
-  const uint8_t len = snprintf(buffer, sizeof(buffer),
-      "%-15s, Timestamp: %10u, Side: %c, Price: %10d, Quantity: %20lu\n",
-      "EXECUTION_NOTICE_WITH_TRADE_INFO", timestamp, block.execution_notice_with_trade_info.side, price, quantity);
+  thread_local std::array<char, 256> buffer;
+  const auto result = std::format_to_n(buffer.data(), buffer.size(),
+    "{:<15}, Timestamp: {:>10}, Side: {}, Price: {:>10}, Quantity: {:>20}\n",
+    "EXECUTION_NOTICE_WITH_TRADE_INFO", timestamp, block.execution_notice_with_trade_info.side, price, quantity);
 
-  logger.log(std::string_view(buffer, len));
+  logger.log(std::string_view(buffer.data(), result.size));
 }
 
 HOT void Client::handleDeletedOrder(const MessageBlock &block)
 {
   const uint32_t timestamp = bswap_32(block.deleted_order.timestamp_nanoseconds);
 
-  char buffer[256];
-  const uint8_t len = snprintf(buffer, sizeof(buffer),
-      "%-15s, Timestamp: %10u, Side: %c\n",
-      "DELETED_ORDER", timestamp, block.deleted_order.side);
+  thread_local std::array<char, 256> buffer;
+  const auto result = std::format_to_n(buffer.data(), buffer.size(),
+    "{:<15}, Timestamp: {:>10}, Side: {}\n",
+    "DELETED_ORDER", timestamp, block.deleted_order.side);
 
-  logger.log(std::string_view(buffer, len));
+  logger.log(std::string_view(buffer.data(), result.size));
 }
 
 void Client::handleSeconds(const MessageBlock &block)

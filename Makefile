@@ -1,6 +1,6 @@
 TARGET := ITCH_Logger
 
-SRCS := $(addprefix src/, main.cpp Client.cpp Logger.cpp utils.cpp error.cpp)
+SRCS := $(addprefix src/, main.cpp Client.cpp Logger.cpp error.cpp)
 OBJS := $(SRCS:.cpp=.o)
 DEPS := $(OBJS:.o=.d)
 
