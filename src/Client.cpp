@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-28 14:58:09                                                
+last edited: 2025-03-28 16:18:40                                                
 
 ================================================================================*/
 
@@ -151,11 +151,13 @@ COLD void Client::run(void)
       const int fd = event.data.fd;
       error |= (event.events & (EPOLLERR | EPOLLHUP));
 
-      int8_t packets_count = recvmmsg(fd, packets, MAX_PACKETS, MSG_WAITFORONE, nullptr);
+      int8_t packets_count = recvmmsg(fd, packets, MAX_PACKETS, MSG_DONTWAIT, nullptr);
       error |= (packets_count == -1);
 
       const MoldUDP64Header *header_ptr = headers;
       const char *payload_ptr = reinterpret_cast<char *>(payloads);
+
+      printf("Received %d packets\n", packets_count);
 
       while (packets_count--)
       {

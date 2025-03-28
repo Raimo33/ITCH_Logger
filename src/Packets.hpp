@@ -1,3 +1,14 @@
+/*================================================================================
+
+File: Packets.hpp                                                               
+Creator: Claudio Raimondi                                                       
+Email: claudio.raimondi@pm.me                                                   
+
+created at: 2025-03-28 16:18:40                                                 
+last edited: 2025-03-28 16:18:40                                                
+
+================================================================================*/
+
 #pragma once
 
 #include <cstdint>
@@ -8,8 +19,8 @@
 struct MoldUDP64Header
 {
   char session[10];
-  uint16_t message_count;
   uint64_t sequence_number;
+  uint16_t message_count;
 };
 
 struct MessageBlock
