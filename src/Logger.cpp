@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 12:48:08                                                 
-last edited: 2025-03-28 16:18:40                                                
+last edited: 2025-03-28 16:23:06                                                
 
 ================================================================================*/
 
@@ -70,8 +70,6 @@ HOT void Logger::log(const std::string_view message)
 {
   const char *data = message.data();
   size_t remaining = message.size();
-
-  printf("log called. message: %s\n", message.data());
 
   while (remaining > 0)
   {

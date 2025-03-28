@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-28 16:18:40                                                
+last edited: 2025-03-28 16:23:06                                                
 
 ================================================================================*/
 
@@ -157,8 +157,6 @@ COLD void Client::run(void)
       const MoldUDP64Header *header_ptr = headers;
       const char *payload_ptr = reinterpret_cast<char *>(payloads);
 
-      printf("Received %d packets\n", packets_count);
-
       while (packets_count--)
       {
         PREFETCH_R(header_ptr + 1, 2);
@@ -208,7 +206,7 @@ HOT void Client::processMessageBlocks(const char *buffer, uint16_t blocks_count)
 
     (this->*handlers[block.type])(block);
 
-    buffer += block_length;
+    buffer += block_length + sizeof(block.length);
   }
 }
 
