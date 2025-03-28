@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-28 14:58:09                                                
+last edited: 2025-03-28 16:23:23                                                
 
 ================================================================================*/
 
@@ -206,7 +206,7 @@ HOT void Client::processMessageBlocks(const char *buffer, uint16_t blocks_count)
 
     (this->*handlers[block.type])(block);
 
-    buffer += block_length;
+    buffer += block_length + sizeof(block.length);
   }
 }
 
