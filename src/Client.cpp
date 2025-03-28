@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-28 16:33:42                                                
+last edited: 2025-03-28 16:40:00                                                
 
 ================================================================================*/
 
@@ -80,7 +80,7 @@ COLD int Client::createUdpSocket(void) const
 COLD void Client::run(void)
 {
   constexpr uint8_t MAX_PACKETS = 64;
-  constexpr uint16_t MTU = 1500;
+  constexpr uint16_t MTU = 2000;
   constexpr uint16_t MAX_MSG_SIZE = MTU - sizeof(MoldUDP64Header);
 
   //+1 added for safe prefetching past the last packet 
@@ -168,7 +168,7 @@ HOT void Client::handleNewOrder(const MessageBlock &block)
 
   thread_local std::array<char, 256> buffer;
   const auto result = std::format_to_n(buffer.data(), buffer.size(),
-    "{:<15}, Timestamp: {:>10}, Side: {}, Price: {:>10}, Quantity: {:>20}, Orderbook Position: {:>10}\n",
+    "{:<20}, Timestamp: {:>10}, Side: {}, Price: {:>10}, Quantity: {:>20}, Orderbook Position: {:>10}\n",
     "NEW_ORDER", timestamp, block.new_order.side, price, quantity, orderbook_position);
 
   logger.log(std::string_view(buffer.data(), result.size));
@@ -182,7 +182,7 @@ HOT void Client::handleExecutionNotice(const MessageBlock &block)
 
   thread_local std::array<char, 256> buffer;
   const auto result = std::format_to_n(buffer.data(), buffer.size(),
-    "{:<15}, Timestamp: {:>10}, Side: {}, Price: {:>10}, Quantity: {:>20}\n",
+    "{:<20}, Timestamp: {:>10}, Side: {}, Price: {:>10}, Quantity: {:>20}\n",
     "EXECUTION_NOTICE", timestamp, block.execution_notice.side, price, quantity);
   
   logger.log(std::string_view(buffer.data(), result.size)); 
@@ -196,7 +196,7 @@ HOT void Client::handleExecutionNoticeWithTradeInfo(const MessageBlock &block)
 
   thread_local std::array<char, 256> buffer;
   const auto result = std::format_to_n(buffer.data(), buffer.size(),
-    "{:<15}, Timestamp: {:>10}, Side: {}, Price: {:>10}, Quantity: {:>20}\n",
+    "{:<20}, Timestamp: {:>10}, Side: {}, Price: {:>10}, Quantity: {:>20}\n",
     "EXECUTION_NOTICE_WITH_TRADE_INFO", timestamp, block.execution_notice_with_trade_info.side, price, quantity);
 
   logger.log(std::string_view(buffer.data(), result.size));
@@ -208,7 +208,7 @@ HOT void Client::handleDeletedOrder(const MessageBlock &block)
 
   thread_local std::array<char, 256> buffer;
   const auto result = std::format_to_n(buffer.data(), buffer.size(),
-    "{:<15}, Timestamp: {:>10}, Side: {}\n",
+    "{:<20}, Timestamp: {:>10}, Side: {}\n",
     "DELETED_ORDER", timestamp, block.deleted_order.side);
 
   logger.log(std::string_view(buffer.data(), result.size));
