@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-28 14:14:31                                                
+last edited: 2025-03-28 14:59:44                                                
 
 ================================================================================*/
 
@@ -103,7 +103,6 @@ COLD void Client::run(void)
   {
     int8_t packets_count = recvmmsg(fd, packets, MAX_PACKETS, MSG_WAITALL, nullptr);
     error |= (packets_count == -1);
-    CHECK_ERROR;
 
     const MoldUDP64Header *header_ptr = headers;
     const char *payload_ptr = reinterpret_cast<char *>(payloads);
@@ -119,6 +118,7 @@ COLD void Client::run(void)
       header_ptr++;
       payload_ptr += MAX_MSG_SIZE;
     }
+    CHECK_ERROR;
   }
 
   UNREACHABLE;
