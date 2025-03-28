@@ -1,0 +1,87 @@
+DELETED_ORDER  , Timestamp:  640633344, Side: B
+NEW_ORDER      , Timestamp:  361891050, Side: S, Price:  385100000, Quantity:                    1, Orderbook Position:          1
+NEW_ORDER      , Timestamp:  570947619, Side: S, Price:  385100000, Quantity:                    1, Orderbook Position:          2
+NEW_ORDER      , Timestamp:  753579804, Side: S, Price:  385100000, Quantity:                    1, Orderbook Position:          3
+NEW_ORDER      , Timestamp:  931082994, Side: S, Price:  385100000, Quantity:                    1, Orderbook Position:          4
+NEW_ORDER      , Timestamp:  112298075, Side: S, Price:  385100000, Quantity:                    1, Orderbook Position:          5
+NEW_ORDER      , Timestamp:  266547775, Side: S, Price:  385100000, Quantity:                    1, Orderbook Position:          6
+NEW_ORDER      , Timestamp:  445682611, Side: S, Price:  385100000, Quantity:                    1, Orderbook Position:          7
+NEW_ORDER      , Timestamp:  635686632, Side: S, Price:  385100000, Quantity:                    1, Orderbook Position:          8
+NEW_ORDER      , Timestamp:  841850109, Side: S, Price:  385100000, Quantity:                    1, Orderbook Position:          9
+NEW_ORDER      , Timestamp:   73823026, Side: S, Price:  385100000, Quantity:                    1, Orderbook Position:         10
+NEW_ORDER      , Timestamp:  161830514, Side: B, Price:  378200000, Quantity:                    1, Orderbook Position:          2
+NEW_ORDER      , Timestamp:  337278260, Side: B, Price:  378200000, Quantity:                    1, Orderbook Position:          3
+NEW_ORDER      , Timestamp:  503596481, Side: B, Price:  378200000, Quantity:                    1, Orderbook Position:          4
+NEW_ORDER      , Timestamp:  677637106, Side: B, Price:  378200000, Quantity:                    1, Orderbook Position:          5
+NEW_ORDER      , Timestamp:  847258685, Side: B, Price:  378200000, Quantity:                    1, Orderbook Position:          6
+NEW_ORDER      , Timestamp:   20273644, Side: B, Price:  378200000, Quantity:                    1, Orderbook Position:          7
+NEW_ORDER      , Timestamp:  191556144, Side: B, Price:  378200000, Quantity:                    1, Orderbook Position:          8
+NEW_ORDER      , Timestamp:  351091722, Side: B, Price:  378200000, Quantity:                    1, Orderbook Position:          9
+NEW_ORDER      , Timestamp:  517781271, Side: B, Price:  378200000, Quantity:                    1, Orderbook Position:         10
+NEW_ORDER      , Timestamp:  691652256, Side: B, Price:  378200000, Quantity:                    1, Orderbook Position:         11
+NEW_ORDER      , Timestamp:  859832180, Side: B, Price:  378200000, Quantity:                    1, Orderbook Position:         12
+DELETED_ORDER  , Timestamp:  980540670, Side: S
+DELETED_ORDER  , Timestamp:   60381550, Side: S
+DELETED_ORDER  , Timestamp:   62262218, Side: S
+DELETED_ORDER  , Timestamp:   62268043, Side: S
+DELETED_ORDER  , Timestamp:   62271865, Side: S
+DELETED_ORDER  , Timestamp:   62275889, Side: S
+DELETED_ORDER  , Timestamp:   62280286, Side: S
+DELETED_ORDER  , Timestamp:   62283680, Side: S
+DELETED_ORDER  , Timestamp:  142738056, Side: S
+DELETED_ORDER  , Timestamp:  152801811, Side: S
+DELETED_ORDER  , Timestamp:  149047524, Side: B
+DELETED_ORDER  , Timestamp:  228917822, Side: B
+DELETED_ORDER  , Timestamp:  230841886, Side: B
+DELETED_ORDER  , Timestamp:  230846007, Side: B
+DELETED_ORDER  , Timestamp:  230850404, Side: B
+DELETED_ORDER  , Timestamp:  230856405, Side: B
+DELETED_ORDER  , Timestamp:  230859646, Side: B
+DELETED_ORDER  , Timestamp:  230862734, Side: B
+DELETED_ORDER  , Timestamp:  311239575, Side: B
+DELETED_ORDER  , Timestamp:  321310069, Side: B
+DELETED_ORDER  , Timestamp:  331383188, Side: B
+NEW_ORDER      , Timestamp:  200084873, Side: B, Price:  380000000, Quantity:                    4, Orderbook Position:          1
+DELETED_ORDER  , Timestamp:  549471828, Side: S
+DELETED_ORDER  , Timestamp:  811899417, Side: B
+DELETED_ORDER  , Timestamp:     170835, Side: B
+DELETED_ORDER  , Timestamp:  976688457, Side: S
+DELETED_ORDER  , Timestamp:  215723283, Side: S
+DELETED_ORDER  , Timestamp:  495665500, Side: B
+NEW_ORDER      , Timestamp:  494324423, Side: B, Price:    1464200, Quantity:                   10, Orderbook Position:          1
+NEW_ORDER      , Timestamp:  949564877, Side: B, Price:  246450000, Quantity:                   50, Orderbook Position:          1
+NEW_ORDER      , Timestamp:  892313954, Side: S, Price:  246950000, Quantity:                   50, Orderbook Position:          1
+NEW_ORDER      , Timestamp:   65226894, Side: B, Price:    1464200, Quantity:                   30, Orderbook Position:          2
+NEW_ORDER      , Timestamp:  552278795, Side: B, Price:  368200000, Quantity:                   50, Orderbook Position:          1
+DELETED_ORDER  , Timestamp:   35361300, Side: B
+NEW_ORDER      , Timestamp:  867434135, Side: S, Price:  363950000, Quantity:                   10, Orderbook Position:          1
+NEW_ORDER      , Timestamp:  791388172, Side: S, Price:  364000000, Quantity:                   10, Orderbook Position:          2
+NEW_ORDER      , Timestamp:  720451442, Side: S, Price:  364050000, Quantity:                   10, Orderbook Position:          3
+DELETED_ORDER  , Timestamp:  960040315, Side: B
+DELETED_ORDER  , Timestamp:  117729566, Side: B
+NEW_ORDER      , Timestamp:  718565688, Side: B, Price:    1464200, Quantity:                   10, Orderbook Position:          1
+NEW_ORDER      , Timestamp:  338292856, Side: B, Price:    1464200, Quantity:                   30, Orderbook Position:          2
+DELETED_ORDER  , Timestamp:  118281946, Side: B
+NEW_ORDER      , Timestamp:  118281946, Side: B, Price:    1464400, Quantity:                   40, Orderbook Position:          1
+DELETED_ORDER  , Timestamp:  634093602, Side: B
+DELETED_ORDER  , Timestamp:  126478615, Side: B
+NEW_ORDER      , Timestamp:  341484797, Side: S, Price:    1464400, Quantity:                   10, Orderbook Position:          1
+EXECUTION_NOTICE, Timestamp:  574085045, Side: S, Price: 2147483647, Quantity:                   10
+NEW_ORDER      , Timestamp:  574085045, Side: B, Price:    1464400, Quantity:                   20, Orderbook Position:          1
+DELETED_ORDER  , Timestamp:  161066991, Side: B
+NEW_ORDER      , Timestamp:  759757665, Side: B, Price:    1203600, Quantity:                   10, Orderbook Position:          1
+NEW_ORDER      , Timestamp:  784421335, Side: B, Price:    1464200, Quantity:                   30, Orderbook Position:          1
+NEW_ORDER      , Timestamp:  681332434, Side: S, Price:    1203800, Quantity:                   10, Orderbook Position:          1
+NEW_ORDER      , Timestamp:  610191261, Side: B, Price:    1203500, Quantity:                   10, Orderbook Position:          2
+NEW_ORDER      , Timestamp:  535106923, Side: S, Price:    1203900, Quantity:                   10, Orderbook Position:          2
+NEW_ORDER      , Timestamp:  336264349, Side: B, Price:  246900000, Quantity:                  100, Orderbook Position:          1
+EXECUTION_NOTICE, Timestamp:  855131426, Side: B, Price: 2147483647, Quantity:                   30
+NEW_ORDER      , Timestamp:  382495543, Side: B, Price:    1464200, Quantity:                   10, Orderbook Position:          1
+EXECUTION_NOTICE, Timestamp:  970735428, Side: B, Price: 2147483647, Quantity:                   50
+NEW_ORDER      , Timestamp:  788941058, Side: B, Price:  367650000, Quantity:                   13, Orderbook Position:          2
+DELETED_ORDER  , Timestamp:  533399110, Side: B
+NEW_ORDER      , Timestamp:  533399110, Side: B, Price:  368200000, Quantity:                   13, Orderbook Position:          1
+NEW_ORDER      , Timestamp:  472671194, Side: B, Price:    1464300, Quantity:                   30, Orderbook Position:          1
+NEW_ORDER      , Timestamp:  671793175, Side: B, Price:  368200000, Quantity:                   12, Orderbook Position:          2
+EXECUTION_NOTICE, Timestamp:  335088557, Side: B, Price: 2147483647, Quantity:                   20
+NEW_ORDER      , Timestamp:  975737974
