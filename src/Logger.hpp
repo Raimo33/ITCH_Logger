@@ -6,7 +6,6 @@
 #include <chrono>
 #include <cstdint>
 #include <sys/uio.h>
-#include <liburing.h>
 #include <memory>
 
 constexpr size_t WRITE_BUFFER_SIZE = 1024;
@@ -29,10 +28,7 @@ class Logger
 
     const std::string filename;
     int fd;
-    std::array<char *, 2> buffers;
-    uint8_t buf_idx;
-    uint8_t fd_idx;
+    char *buffer;
     char *write_ptr;
     const char *end_ptr;
-    io_uring ring;
 };

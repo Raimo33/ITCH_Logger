@@ -48,7 +48,6 @@ CXXFLAGS += -march=znver2 -mtune=znver2
 # CXXFLAGS += -fno-plt -fuse-linker-plugin -flto
 
 LDFLAGS = -static -static-libgcc -static-libstdc++
-LDFLAGS += -luring
 
 %.o: %.cpp %.d
 	$(CXX) $(CXXFLAGS) -c $< -o $@
