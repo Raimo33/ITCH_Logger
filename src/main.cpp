@@ -5,11 +5,12 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-17 15:30:41                                                 
-last edited: 2025-03-27 15:31:31                                                
+last edited: 2025-03-28 15:08:39                                                
 
 ================================================================================*/
 
 #include <iostream>
+#include <csignal>
 
 #include "Client.hpp"
 #include "error.hpp"
