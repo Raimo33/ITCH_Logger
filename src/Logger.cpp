@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 12:48:08                                                 
-last edited: 2025-03-27 18:59:25                                                
+last edited: 2025-03-28 14:14:31                                                
 
 ================================================================================*/
 
@@ -20,7 +20,6 @@ last edited: 2025-03-27 18:59:25
 #include <format>
 
 #include "Logger.hpp"
-#include "utils.hpp"
 #include "error.hpp"
 
 COLD Logger::Logger(const std::string_view filename) :
