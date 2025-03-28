@@ -10,6 +10,7 @@ last edited: 2025-03-26 18:45:07
 ================================================================================*/
 
 #include <iostream>
+#include <csignal>
 
 #include "Client.hpp"
 #include "error.hpp"

@@ -106,7 +106,6 @@ HOT void Logger::log(const std::string_view message)
 
 HOT void Logger::flush(void)
 {
-  //TODO segfault here
   io_uring_sqe *sqe = io_uring_get_sqe(&ring);
   error |= (sqe == nullptr);
   CHECK_ERROR;

@@ -31,7 +31,6 @@ class Logger
     int fd;
     std::array<char *, 2> buffers;
     uint8_t buf_idx;
-    uint8_t fd_idx;
     char *write_ptr;
     const char *end_ptr;
     io_uring ring;
