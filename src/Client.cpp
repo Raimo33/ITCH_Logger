@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-30 15:10:52                                                
+last edited: 2025-03-30 15:24:12                                                
 
 ================================================================================*/
 
@@ -37,13 +37,13 @@ COLD Client::Client(const std::string_view ip, const uint16_t port) :
   fd(createUdpSocket()),
   logger("itch_multicast")
 {
-  error |= (bind(fd, reinterpret_cast<const sockaddr *>(&bind_address), sizeof(bind_address)) == -1);
+  error |= bind(fd, reinterpret_cast<const sockaddr *>(&bind_address), sizeof(bind_address)) == -1;
 
   ip_mreq mreq{};
   mreq.imr_interface.s_addr = bind_address.sin_addr.s_addr;
   mreq.imr_multiaddr.s_addr = multicast_address.sin_addr.s_addr;
 
-  error |= (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1);
+  error |= setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1;
 
   CHECK_ERROR;
 }
@@ -63,17 +63,17 @@ COLD int Client::createUdpSocket(void) const
   constexpr int enable = 1;
   constexpr int disable = 0;
   //constexpr int priority = 255;
-  constexpr int recv_bufsize = SOCK_BUFSIZE;
+  // constexpr int recv_bufsize = SOCK_BUFSIZE;
 
-  error |= (setsockopt(sock_fd, IPPROTO_IP, IP_MULTICAST_LOOP, &disable, sizeof(disable)) == -1);
-  error |= (setsockopt(sock_fd, SOL_SOCKET, SO_BUSY_POLL, &enable, sizeof(enable)) == -1);
-  // error |= (setsockopt(sock_fd, SOL_SOCKET, SO_PRIORITY, &priority, sizeof(enable)) == -1);
-  // error |= (setsockopt(sock_fd, SOL_SOCKET, SO_ZEROCOPY, &enable, sizeof(enable)) == -1);
+  error |= setsockopt(sock_fd, IPPROTO_IP, IP_MULTICAST_LOOP, &disable, sizeof(disable)) == -1;
+  error |= setsockopt(sock_fd, SOL_SOCKET, SO_BUSY_POLL, &enable, sizeof(enable)) == -1;
+  // error |= setsockopt(sock_fd, SOL_SOCKET, SO_PRIORITY, &priority, sizeof(enable)) == -1;
+  // error |= setsockopt(sock_fd, SOL_SOCKET, SO_ZEROCOPY, &enable, sizeof(enable)) == -1;
   // error |= setsockopt(sock_fd, SOL_SOCKET, SO_RCVBUF, &recv_bufsize, sizeof(recv_bufsize)) == -1;
 
   //TODO remove
-  error |= (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) == -1);
-  error |= (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof(enable)) == -1);
+  error |= setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) == -1;
+  error |= setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof(enable)) == -1;
 
   CHECK_ERROR;
 

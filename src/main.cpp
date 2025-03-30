@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-17 15:30:41                                                 
-last edited: 2025-03-26 18:45:07                                                
+last edited: 2025-03-30 15:24:12                                                
 
 ================================================================================*/
 
@@ -39,10 +39,10 @@ void init_signal_handler(void)
 
   sa.sa_handler = [](int) { panic(); };
 
-  error |= (sigaction(SIGINT, &sa, nullptr) == -1);
-  error |= (sigaction(SIGTERM, &sa, nullptr) == -1);
-  error |= (sigaction(SIGQUIT, &sa, nullptr) == -1);
-  error |= (sigaction(SIGPIPE, &sa, nullptr) == -1);
+  error |= sigaction(SIGINT, &sa, nullptr) == -1;
+  error |= sigaction(SIGTERM, &sa, nullptr) == -1;
+  error |= sigaction(SIGQUIT, &sa, nullptr) == -1;
+  error |= sigaction(SIGPIPE, &sa, nullptr) == -1;
 
   CHECK_ERROR;
 }
