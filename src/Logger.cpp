@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-15 12:48:08                                                 
-last edited: 2025-03-28 14:17:32                                                
+last edited: 2025-03-30 15:22:24                                                
 
 ================================================================================*/
 
@@ -30,8 +30,8 @@ COLD Logger::Logger(const std::string_view filename) :
 {
   error |= (buffer == nullptr);
 
-  error |= (madvise(buffer, WRITE_BUFFER_SIZE, MADV_SEQUENTIAL) == -1);
-  error |= (posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL) == -1);
+  error |= madvise(buffer, WRITE_BUFFER_SIZE, MADV_SEQUENTIAL) == -1;
+  error |= posix_fadvise(fd, 0, 0, POSIX_FADV_SEQUENTIAL) == -1;
 
   CHECK_ERROR;
 }
@@ -86,7 +86,7 @@ HOT void Logger::log(const std::string_view message)
 
 HOT void Logger::flush(void)
 {
-  error |= (write(fd, buffer, WRITE_BUFFER_SIZE) == -1);
+  error |= write(fd, buffer, WRITE_BUFFER_SIZE) == -1;
   write_ptr = buffer;
 
   CHECK_ERROR;
