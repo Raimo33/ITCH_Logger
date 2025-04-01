@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-30 15:19:39                                                
+last edited: 2025-04-01 20:48:04                                                
 
 ================================================================================*/
 
@@ -48,12 +48,12 @@ COLD std::vector<int> Client::createSockets(const std::vector<std::string> &addr
 
     sockaddr_in bind_address{};
     bind_address.sin_family = AF_INET;
-    bind_address.sin_port = htons(std::stoi(port));
+    bind_address.sin_port = htobe16(std::stoi(port));
     bind_address.sin_addr.s_addr = INADDR_ANY;
 
     sockaddr_in multicast_address{};
     multicast_address.sin_family = AF_INET;
-    multicast_address.sin_port = htons(std::stoi(port));
+    multicast_address.sin_port = htobe16(std::stoi(port));
     multicast_address.sin_addr.s_addr = inet_addr(ip.data());
 
     ip_mreq mreq{};
