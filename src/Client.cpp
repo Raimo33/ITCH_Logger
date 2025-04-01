@@ -5,7 +5,7 @@ Creator: Claudio Raimondi
 Email: claudio.raimondi@pm.me                                                   
 
 created at: 2025-03-14 19:09:39                                                 
-last edited: 2025-03-30 15:22:24                                                
+last edited: 2025-04-01 20:47:40                                                
 
 ================================================================================*/
 
@@ -24,13 +24,13 @@ last edited: 2025-03-30 15:22:24
 COLD Client::Client(const std::string_view ip, const uint16_t port) :
   bind_address{
     AF_INET,
-    htons(port),
+    htobe16(port),
     { INADDR_ANY },
     {}
   },
   multicast_address{
     AF_INET,
-    htons(port),
+    htobe16(port),
     { inet_addr(ip.data()) },
     {}
   },
